@@ -9,9 +9,9 @@ from core.filters import build_fintech_filters, check_empty_state
 
 def render(df: pd.DataFrame) -> None:
     """Render the Anomaly Investigation & Risk Radar forensics page."""
-    df_f = build_fintech_filters(df, key_prefix="fin_p2")
-    if check_empty_state(df_f, "transactions"):
+    if check_empty_state(df, "transactions"):
         return
+    df_f = df
 
     render_section_header(
         "Anomaly Investigation & Risk Radar",

@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Top-line GMV, net revenue, take rate economics, and order fulfillment",
     )
 
-    df_f = build_marketplace_filters(df, key_prefix="mkt_p1")
-    if check_empty_state(df_f, "orders"):
+    if check_empty_state(df, "orders"):
         return
+    df_f = df
 
     # ── KPIs ───────────────────────────────────────────────────────────────────
     gmv = df_f["amount"].sum()

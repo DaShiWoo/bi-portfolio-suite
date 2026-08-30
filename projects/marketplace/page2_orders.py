@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Order dispatch velocity, peak transaction hours heatmap, and channel breakdown",
     )
 
-    df_f = build_marketplace_filters(df, key_prefix="mkt_p2")
-    if check_empty_state(df_f, "orders"):
+    if check_empty_state(df, "orders"):
         return
+    df_f = df
 
     # ── KPIs (all from df_f) ───────────────────────────────────────────────────
     delivered_pct = (df_f["status"] == "Delivered").mean() * 100 if len(df_f) else 0.0

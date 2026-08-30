@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Waterfall margin breakdown from real data, LTV dynamics, and interactive fee modeling",
     )
 
-    df_f = build_marketplace_filters(df, key_prefix="mkt_p5")
-    if check_empty_state(df_f, "orders"):
+    if check_empty_state(df, "orders"):
         return
+    df_f = df
 
     # ── Real unit econ derived from df_f ───────────────────────────────────────
     total_gmv    = df_f["amount"].sum()

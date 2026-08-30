@@ -8,9 +8,9 @@ from core.filters import build_healthtech_filters, check_empty_state
 
 def render(df: pd.DataFrame) -> None:
     """Render the Vitals Density & Cardiovascular Biomarkers page."""
-    df_f = build_healthtech_filters(df, key_prefix="health_p2")
-    if check_empty_state(df_f, "patients"):
+    if check_empty_state(df, "patients"):
         return
+    df_f = df
 
     render_section_header(
         "Vitals Density & Cardiovascular Biomarkers",

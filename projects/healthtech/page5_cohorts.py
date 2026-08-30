@@ -8,9 +8,9 @@ from core.filters import build_healthtech_filters, check_empty_state
 
 def render(df: pd.DataFrame) -> None:
     """Render the Cohort Explorer & ICU Discharge Simulator page."""
-    df_f = build_healthtech_filters(df, key_prefix="health_p5")
-    if check_empty_state(df_f, "patients"):
+    if check_empty_state(df, "patients"):
         return
+    df_f = df
 
     render_section_header(
         "Cohort Explorer & ICU Discharge Simulator",

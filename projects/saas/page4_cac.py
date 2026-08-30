@@ -15,9 +15,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="CAC by channel, months to recover acquisition spend, and LTV:CAC efficiency ratios",
     )
 
-    df_f = build_saas_filters(df, key_prefix="saas_p4")
-    if check_empty_state(df_f, "subscribers"):
+    if check_empty_state(df, "subscribers"):
         return
+    df_f = df
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
     avg_cac = df_f["cac"].mean() if len(df_f) > 0 else 0

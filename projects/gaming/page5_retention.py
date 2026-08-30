@@ -8,9 +8,9 @@ from core.filters import build_gaming_filters, check_empty_state
 
 def render(df: pd.DataFrame) -> None:
     """Render the Retention Benchmark Simulator page."""
-    df_f = build_gaming_filters(df, key_prefix="game_p5")
-    if check_empty_state(df_f, "players"):
+    if check_empty_state(df, "players"):
         return
+    df_f = df
 
     render_section_header(
         "Retention Benchmark Simulator",

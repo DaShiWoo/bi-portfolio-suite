@@ -17,9 +17,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Stockout risk alerts, ABC distribution, SKU velocity, and Days of Inventory (DOI)",
     )
 
-    df_f = build_marketplace_filters(df, key_prefix="mkt_p4")
-    if check_empty_state(df_f, "orders"):
+    if check_empty_state(df, "orders"):
         return
+    df_f = df
 
     df_inv = load_marketplace_inventory()
     df_inv_f = df_inv[df_inv["category"].isin(df_f["category"].unique())].copy()

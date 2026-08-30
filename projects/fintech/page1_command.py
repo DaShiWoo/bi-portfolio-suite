@@ -15,9 +15,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Global transaction stream telemetry, real-time threat score, and instant automated mitigation",
     )
 
-    df_f = build_fintech_filters(df, key_prefix="fin_p1")
-    if check_empty_state(df_f, "transactions"):
+    if check_empty_state(df, "transactions"):
         return
+    df_f = df
 
     # ── KPIs from filtered data ──────────────────────────────────────────────
     vol = df_f["amount"].sum()

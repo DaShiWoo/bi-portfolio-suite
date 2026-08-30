@@ -15,9 +15,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Monthly recurring revenue bridge, expansion, contraction, and churn waterfall",
     )
 
-    df_f = build_saas_filters(df, key_prefix="saas_p1")
-    if check_empty_state(df_f, "subscribers"):
+    if check_empty_state(df, "subscribers"):
         return
+    df_f = df
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
     total_mrr = df_f["mrr"].sum()

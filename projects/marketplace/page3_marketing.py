@@ -1,4 +1,4 @@
-﻿# projects/marketplace/page3_marketing.py
+# projects/marketplace/page3_marketing.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Paid campaigns efficiency, ACoS (ДРР), ROAS, channel CTR trend, and per-category attribution",
     )
 
-    df_f = build_marketplace_filters(df, key_prefix="mkt_p3")
-    if check_empty_state(df_f, "orders"):
+    if check_empty_state(df, "orders"):
         return
+    df_f = df
 
     # ── KPIs from df_f ─────────────────────────────────────────────────────────
     total_gmv  = df_f["amount"].sum()
@@ -122,14 +122,19 @@ def render(df: pd.DataFrame) -> None:
             return "color: #f59e0b"
         return "color: #ef4444"
 
-    styled = (
-        display.style
-        .applymap(color_acos, subset=["ACoS (%)"])
-        .applymap(color_roas, subset=["ROAS"])
-        .format({"GMV ($)": "${:,.0f}", "Ad Spend ($)": "${:,.0f}",
-                 "ACoS (%)": "{:.1f}%", "ROAS": "{:.2f}x",
-                 "Avg Take Rate (%)": "{:.1f}%"})
-    )
+    styler = display.style
+    if hasattr(styler, "map"):
+        styler = styler.map(color_acos, subset=["ACoS (%)"]).map(color_roas, subset=["ROAS"])
+    elif hasattr(styler, "applymap"):
+        styler = styler.applymap(color_acos, subset=["ACoS (%)"]).applymap(color_roas, subset=["ROAS"])
+
+    styled = styler.format({
+        "GMV ($)": "${:,.0f}",
+        "Ad Spend ($)": "${:,.0f}",
+        "ACoS (%)": "{:.1f}%",
+        "ROAS": "{:.2f}x",
+        "Avg Take Rate (%)": "{:.1f}%",
+    })
     st.dataframe(styled, use_container_width=True, height=220)
 
     # ── Export ─────────────────────────────────────────────────────────────────

@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Interactive simulation modeling compound ARR trajectory under varying churn & expansion parameters",
     )
 
-    df_f = build_saas_filters(df, key_prefix="saas_p5")
-    if check_empty_state(df_f, "subscribers"):
+    if check_empty_state(df, "subscribers"):
         return
+    df_f = df
 
     st.markdown("""
     <div class="what-if-container">

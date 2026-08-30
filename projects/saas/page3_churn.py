@@ -14,9 +14,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="Identifying root causes of customer cancellations, tier vulnerabilities, and NPS correlation",
     )
 
-    df_f = build_saas_filters(df, key_prefix="saas_p3")
-    if check_empty_state(df_f, "subscribers"):
+    if check_empty_state(df, "subscribers"):
         return
+    df_f = df
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
     churned_df = df_f[df_f["churned"]]

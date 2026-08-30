@@ -16,9 +16,9 @@ def render(df: pd.DataFrame) -> None:
         subtitle="12x12 cohort progression tracking net expansion, upselling, and retention compounding",
     )
 
-    df_f = build_saas_filters(df, key_prefix="saas_p2")
-    if check_empty_state(df_f, "subscribers"):
+    if check_empty_state(df, "subscribers"):
         return
+    df_f = df
 
     # ── KPIs from filtered data ──────────────────────────────────────────────
     active_df = df_f[~df_f["churned"]]

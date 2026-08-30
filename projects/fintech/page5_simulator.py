@@ -9,9 +9,9 @@ from core.filters import build_fintech_filters, check_empty_state
 
 def render(df: pd.DataFrame) -> None:
     """Render the Rule Engine Simulator & Precision Tuning what-if page."""
-    df_f = build_fintech_filters(df, key_prefix="fin_p5")
-    if check_empty_state(df_f, "transactions"):
+    if check_empty_state(df, "transactions"):
         return
+    df_f = df
 
     render_section_header(
         "Rule Engine Simulator & Precision Tuning",
