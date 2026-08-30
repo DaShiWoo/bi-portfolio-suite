@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 setlocal
 chcp 65001 >nul
 title Executive BI Analytics Suite Launcher
@@ -9,13 +9,9 @@ echo   EXECUTIVE BI PORTFOLIO SUITE - 1-CLICK LAUNCHER (5 VERTICALS)
 echo ==============================================================================
 echo.
 
-:: 1. Detect Python from local venv or sibling venv
+:: 1. Detect Python from local venv
 if exist ".venv\Scripts\python.exe" (
     set "PY=.venv\Scripts\python.exe"
-    goto :CHECK_DEPS
-)
-if exist "..\marketplace_bi\.venv\Scripts\python.exe" (
-    set "PY=..\marketplace_bi\.venv\Scripts\python.exe"
     goto :CHECK_DEPS
 )
 
