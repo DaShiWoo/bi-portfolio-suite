@@ -1,4 +1,4 @@
-﻿# projects/gaming/page1_engagement.py
+# projects/gaming/page1_engagement.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -6,15 +6,37 @@ import plotly.graph_objects as go
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
 
 def render(df):
-    render_section_header("Player Engagement & DAU/MAU Stickiness", badge="TELEMETRY", subtitle="Daily active engagement, session frequency, and acquisition channel quality")
-    
-    total_players = len(df)
-    active_d7 = len(df[df["retained_d7"]])
-    active_d30 = len(df[df["retained_d30"]])
+    # ── Sidebar Filters ───────────────────────────────────────────────────────
+    with st.sidebar:
+        with st.expander("🔍 FILTERS", expanded=True):
+            channels = st.multiselect(
+                "Acquisition Channel",
+                options=df["channel"].unique().tolist(),
+                default=df["channel"].unique().tolist(),
+            )
+            level_range = st.slider("Player Level Range", 1, 50, (1, 50))
+            payers_only = st.checkbox("Paying Players Only", value=False)
+
+    df_f = df[df["channel"].isin(channels) & df["level"].between(level_range[0], level_range[1])]
+    if payers_only:
+        df_f = df_f[df_f["iap_spend"] > 0]
+
+    render_section_header(
+        "Player Engagement & DAU/MAU Stickiness",
+        badge="TELEMETRY",
+        subtitle="Daily active engagement, session frequency, and acquisition channel quality",
+    )
+
+    total_players = len(df_f)
+    active_d7 = len(df_f[df_f["retained_d7"]])
+    active_d30 = len(df_f[df_f["retained_d30"]])
+    d1_rate = df_f["retained_d1"].mean() * 100 if "retained_d1" in df_f.columns else 0.0
+    d7_rate = (active_d7 / total_players * 100) if total_players > 0 else 0.0
+    d30_rate = (active_d30 / total_players * 100) if total_players > 0 else 0.0
     dau_est = int(total_players * 0.28)
-    mau_est = int(total_players * 0.74)
-    stickiness = (dau_est / mau_est * 100)
-    
+    mau_est = max(1, int(total_players * 0.74))
+    stickiness = dau_est / mau_est * 100
+
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         render_kpi("Est. Daily Active Users", f"{dau_est:,}", delta="+12.4% WoW", is_positive=True, badge="DAU")
@@ -23,23 +45,42 @@ def render(df):
     with c3:
         render_kpi("DAU / MAU Stickiness", f"{stickiness:.1f}%", delta="Top-tier benchmark > 35%", is_positive=True, badge="STICKINESS")
     with c4:
-        render_kpi("D7 Retained Core", f"{active_d7:,}", delta="+4.2%", is_positive=True, subtext="Players active at D+7", badge="CORE")
-        
+        render_kpi("D7 Retained Core", f"{active_d7:,}", delta=f"{d7_rate:.1f}% of filtered cohort", is_positive=True, subtext="Players active at D+7", badge="CORE")
+
     c1, c2 = st.columns([7, 5])
     with c1:
         st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>RETENTION CURVE (D1 THROUGH D30)</div>", unsafe_allow_html=True)
         days = ["Day 1", "Day 3", "Day 7", "Day 14", "Day 21", "Day 30"]
-        rates = [72.4, 55.1, 42.8, 32.5, 26.1, 21.4]
+        # Compute real rates from filtered data; estimate intermediate points by interpolation
+        r_d1 = d1_rate if d1_rate > 0 else (df_f["retained_d7"].mean() * 100 * 1.4)
+        r_d7 = d7_rate
+        r_d30 = d30_rate
+        r_d3 = (r_d1 + r_d7) / 2
+        r_d14 = (r_d7 + r_d30) / 2 * 1.1
+        r_d21 = (r_d7 + r_d30) / 2 * 0.9
+        rates = [r_d1, r_d3, r_d7, r_d14, r_d21, r_d30]
         fig_r = go.Figure()
-        fig_r.add_trace(go.Scatter(x=days, y=rates, mode="lines+markers", line=dict(color="#06b6d4", width=3), marker=dict(size=8, color="#ec4899"), fill='tozeroy', fillcolor='rgba(6, 182, 212, 0.15)'))
+        fig_r.add_trace(go.Scatter(
+            x=days, y=rates, mode="lines+markers+text",
+            line=dict(color="#06b6d4", width=3),
+            marker=dict(size=8, color="#ec4899"),
+            fill="tozeroy", fillcolor="rgba(6, 182, 212, 0.15)",
+            text=[f"{v:.1f}%" for v in rates], textposition="top center",
+        ))
         fig_r.update_layout(**get_plotly_layout("gaming", height=300))
         st.plotly_chart(fig_r, use_container_width=True)
     with c2:
         st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>PLAYERS BY CHANNEL</div>", unsafe_allow_html=True)
-        chan_agg = df["channel"].value_counts().reset_index()
+        chan_agg = df_f["channel"].value_counts().reset_index()
         chan_agg.columns = ["Channel", "Players"]
-        fig_pie = px.pie(chan_agg, values="Players", names="Channel", hole=0.6, color_discrete_sequence=["#06b6d4", "#ec4899", "#a855f7", "#10b981"])
+        fig_pie = px.pie(
+            chan_agg, values="Players", names="Channel", hole=0.6,
+            color_discrete_sequence=["#06b6d4", "#ec4899", "#a855f7", "#10b981"],
+        )
         fig_pie.update_layout(**get_plotly_layout("gaming", height=300))
         st.plotly_chart(fig_pie, use_container_width=True)
-        
-    render_export_button(df[["player_id", "first_seen", "level", "channel", "retained_d7", "retained_d30"]].head(500), "gaming_engagement_stream.csv")
+
+    render_export_button(
+        df_f[["player_id", "first_seen", "level", "channel", "retained_d7", "retained_d30"]].head(500),
+        "gaming_engagement_stream.csv",
+    )
