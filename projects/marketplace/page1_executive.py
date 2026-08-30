@@ -4,51 +4,21 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+from core.filters import build_marketplace_filters, check_empty_state
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
 
 
-def render(df: pd.DataFrame):
+def render(df: pd.DataFrame) -> None:
+    """Render the executive macro performance dashboard with top-line GMV, revenue, and margins."""
     render_section_header(
         "Executive Macro Performance",
         badge="MACRO OVERVIEW",
         subtitle="Top-line GMV, net revenue, take rate economics, and order fulfillment",
     )
 
-    # ── Sidebar filters ────────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            min_date = df["timestamp"].dt.date.min()
-            max_date = df["timestamp"].dt.date.max()
-            date_range = st.date_input("Date Range", value=[min_date, max_date])
-
-            categories = st.multiselect(
-                "Categories",
-                options=df["category"].unique().tolist(),
-                default=df["category"].unique().tolist(),
-            )
-            channels = st.multiselect(
-                "Channels",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            regions = st.multiselect(
-                "Regions",
-                options=df["region"].unique().tolist(),
-                default=df["region"].unique().tolist(),
-            )
-
-    # ── Apply filters ──────────────────────────────────────────────────────────
-    d0 = pd.to_datetime(date_range[0]) if len(date_range) >= 1 else pd.to_datetime(min_date)
-    d1 = pd.to_datetime(date_range[1]) if len(date_range) >= 2 else pd.to_datetime(max_date)
-    mask = (
-        (df["timestamp"] >= d0)
-        & (df["timestamp"] <= d1 + pd.Timedelta(days=1) - pd.Timedelta(seconds=1))
-        & df["category"].isin(categories)
-        & df["channel"].isin(channels)
-        & df["region"].isin(regions)
-    )
-    df_f = df[mask].copy()
-    st.caption(f"Showing {len(df_f):,} of {len(df):,} orders")
+    df_f = build_marketplace_filters(df, key_prefix="mkt_p1")
+    if check_empty_state(df_f, "orders"):
+        return
 
     # ── KPIs ───────────────────────────────────────────────────────────────────
     gmv = df_f["amount"].sum()
@@ -60,6 +30,8 @@ def render(df: pd.DataFrame):
     margin = (net_profit / rev * 100) if rev > 0 else 0.0
 
     # Real delta: first-half vs second-half of selected date range
+    d0 = df_f["timestamp"].min()
+    d1 = df_f["timestamp"].max()
     mid_ts = d0 + (d1 - d0) / 2
     gmv_h1 = df_f[df_f["timestamp"] < mid_ts]["amount"].sum()
     gmv_h2 = df_f[df_f["timestamp"] >= mid_ts]["amount"].sum()

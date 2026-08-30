@@ -1,10 +1,10 @@
 ﻿# projects/fintech/__init__.py
 import streamlit as st
-import pandas as pd
+from core.data_loader import load_fintech_transactions
 from projects.fintech import page1_command, page2_anomalies, page3_rails, page4_geo, page5_simulator
 
-def render():
-    df = pd.read_parquet("data/fintech_transactions.parquet")
+def render() -> None:
+    df = load_fintech_transactions()
     
     tabs = st.tabs([
         "🛡️  1. Live Threat Command",

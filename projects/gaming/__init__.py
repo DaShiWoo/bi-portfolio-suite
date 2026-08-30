@@ -1,17 +1,17 @@
 ﻿# projects/gaming/__init__.py
 import streamlit as st
-import pandas as pd
+from core.data_loader import load_gaming_telemetry
 from projects.gaming import page1_engagement, page2_funnel, page3_currency, page4_monetization, page5_retention
 
-def render():
-    df = pd.read_parquet("data/gaming_telemetry.parquet")
+def render() -> None:
+    df = load_gaming_telemetry()
     
     tabs = st.tabs([
-        "🎮  1. Player Engagement & DAU/MAU",
-        "🧗  2. Level Progression & Churn Funnel",
-        "🪙  3. Virtual Currency Sink vs Source",
-        "🛒  4. Monetization & Whale Analytics",
-        "⏱️  5. Retention Benchmark Simulator"
+        "🎮  1. Engagement & Active Cohorts",
+        "🪜  2. Level Progression & Churn Walls",
+        "🪙  3. Virtual Economy & Inflation Sink",
+        "💎  4. Whale Monetization & LTV",
+        "🔄  5. Retention Curve What-If Simulator"
     ])
     
     with tabs[0]:

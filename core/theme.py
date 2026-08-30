@@ -1,4 +1,4 @@
-﻿"""
+"""
 core/theme.py
 Design System, Component Library, and Theme Engine for BI Portfolio Hub.
 Upgraded with animated gradient backgrounds, shimmer KPI cards, glassmorphism
@@ -128,11 +128,22 @@ def apply_theme(theme_key: str):
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }}
 
-    /* Animated gradient background */
+    /* Animated gradient background with solid fallback */
     .stApp {{
-        background: {cfg['gradient']};
+        background-color: {cfg['bg']};
+        background-image: {cfg['gradient']};
         background-attachment: fixed;
         color: {cfg['text_primary']};
+    }}
+
+    @media (prefers-reduced-motion: reduce) {{
+        .bi-card::after {{
+            animation: none !important;
+        }}
+        .bi-card:hover {{
+            transform: none !important;
+            animation: none !important;
+        }}
     }}
 
     /* Shimmer keyframes for KPI cards */

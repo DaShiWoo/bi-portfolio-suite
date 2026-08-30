@@ -1,35 +1,16 @@
-﻿# projects/healthtech/page1_icu.py
+# projects/healthtech/page1_icu.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_healthtech_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar Filters ───────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            wards = st.multiselect(
-                "Clinical Ward",
-                options=df["ward"].unique().tolist(),
-                default=df["ward"].unique().tolist(),
-            )
-            risk_cats = st.multiselect(
-                "Risk Category",
-                options=df["risk_category"].unique().tolist(),
-                default=df["risk_category"].unique().tolist(),
-            )
-            age_range = st.slider(
-                "Patient Age Range",
-                int(df["age"].min()), int(df["age"].max()),
-                (int(df["age"].min()), int(df["age"].max())),
-            )
 
-    df_f = df[
-        df["ward"].isin(wards) &
-        df["risk_category"].isin(risk_cats) &
-        (df["age"] >= age_range[0]) &
-        (df["age"] <= age_range[1])
-    ]
+def render(df: pd.DataFrame) -> None:
+    """Render the Clinical ICU Telemetry & Real-Time Vitals dashboard page."""
+    df_f = build_healthtech_filters(df, key_prefix="health_p1")
+    if check_empty_state(df_f, "patients"):
+        return
 
     render_section_header(
         "Clinical ICU Telemetry & Real-Time Vitals",

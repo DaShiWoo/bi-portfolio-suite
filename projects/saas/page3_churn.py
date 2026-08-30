@@ -2,40 +2,21 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from core.filters import build_saas_filters, check_empty_state
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
 
-def render(df):
-    # ── Sidebar filters ──────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            tiers = st.multiselect(
-                "Subscription Tier",
-                options=df["tier"].unique().tolist(),
-                default=df["tier"].unique().tolist(),
-            )
-            channels = st.multiselect(
-                "Acquisition Channel",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            churned_filter = st.radio(
-                "Customer Status",
-                ["All", "Active Only", "Churned Only"],
-                index=0,
-            )
 
-    # ── Apply filters ────────────────────────────────────────────────────────
-    df_f = df[df["tier"].isin(tiers) & df["channel"].isin(channels)]
-    if churned_filter == "Active Only":
-        df_f = df_f[~df_f["churned"]]
-    elif churned_filter == "Churned Only":
-        df_f = df_f[df_f["churned"]]
-
+def render(df: pd.DataFrame) -> None:
+    """Render churn and downgrade decomposition with root cause analysis and NPS correlation."""
     render_section_header(
         "Churn & Downgrade Decomposition",
         badge="ATTRITION",
         subtitle="Identifying root causes of customer cancellations, tier vulnerabilities, and NPS correlation",
     )
+
+    df_f = build_saas_filters(df, key_prefix="saas_p3")
+    if check_empty_state(df_f, "subscribers"):
+        return
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
     churned_df = df_f[df_f["churned"]]

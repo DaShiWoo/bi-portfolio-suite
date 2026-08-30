@@ -1,10 +1,10 @@
 ﻿# projects/marketplace/__init__.py
 import streamlit as st
-import pandas as pd
+from core.data_loader import load_marketplace_orders
 from projects.marketplace import page1_executive, page2_orders, page3_marketing, page4_inventory, page5_unit_econ
 
-def render():
-    df = pd.read_parquet("data/marketplace_orders.parquet")
+def render() -> None:
+    df = load_marketplace_orders()
     
     tabs = st.tabs([
         "📊  1. Executive Macro Overview",

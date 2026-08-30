@@ -4,61 +4,32 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+from core.data_loader import load_marketplace_inventory
+from core.filters import build_marketplace_filters, check_empty_state
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
 
 
-def render(df_orders: pd.DataFrame):
+def render(df: pd.DataFrame) -> None:
+    """Render inventory health and ABC/XYZ classification matrix dashboard."""
     render_section_header(
         "Inventory Health & ABC/XYZ Matrix",
         badge="WAREHOUSING",
         subtitle="Stockout risk alerts, ABC distribution, SKU velocity, and Days of Inventory (DOI)",
     )
 
-    # Load inventory data (not filtered by sidebar — warehouse data independent of order stream)
-    df_inv = pd.read_parquet("data/marketplace_inventory.parquet")
+    df_f = build_marketplace_filters(df, key_prefix="mkt_p4")
+    if check_empty_state(df_f, "orders"):
+        return
 
-    # ── Sidebar filters (for order-level cross-reference) ──────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            min_date = df_orders["timestamp"].dt.date.min()
-            max_date = df_orders["timestamp"].dt.date.max()
-            date_range = st.date_input("Date Range", value=[min_date, max_date])
-
-            categories = st.multiselect(
-                "Categories",
-                options=df_orders["category"].unique().tolist(),
-                default=df_orders["category"].unique().tolist(),
-            )
-            channels = st.multiselect(
-                "Channels",
-                options=df_orders["channel"].unique().tolist(),
-                default=df_orders["channel"].unique().tolist(),
-            )
-            regions = st.multiselect(
-                "Regions",
-                options=df_orders["region"].unique().tolist(),
-                default=df_orders["region"].unique().tolist(),
-            )
-
-    # Apply order filters for caption
-    d0 = pd.to_datetime(date_range[0]) if len(date_range) >= 1 else pd.to_datetime(min_date)
-    d1 = pd.to_datetime(date_range[1]) if len(date_range) >= 2 else pd.to_datetime(max_date)
-    order_mask = (
-        (df_orders["timestamp"] >= d0)
-        & (df_orders["timestamp"] <= d1 + pd.Timedelta(days=1) - pd.Timedelta(seconds=1))
-        & df_orders["category"].isin(categories)
-        & df_orders["channel"].isin(channels)
-        & df_orders["region"].isin(regions)
-    )
-    df_f = df_orders[order_mask]
-    st.caption(f"Showing {len(df_f):,} of {len(df_orders):,} orders (inventory data: {len(df_inv)} SKUs)")
+    df_inv = load_marketplace_inventory()
+    df_inv_f = df_inv[df_inv["category"].isin(df_f["category"].unique())].copy()
 
     # ── KPIs from inventory data ───────────────────────────────────────────────
-    total_skus  = len(df_inv)
-    crit_skus   = len(df_inv[df_inv["stockout_risk"] == "CRITICAL (< 7d)"])
-    warn_skus   = len(df_inv[df_inv["days_of_inventory"] < 14])
-    avg_doi     = df_inv["days_of_inventory"].mean()
-    total_val   = (df_inv["stock_units"] * df_inv["unit_cost"]).sum()
+    total_skus  = len(df_inv_f)
+    crit_skus   = len(df_inv_f[df_inv_f["stockout_risk"] == "CRITICAL (< 7d)"])
+    warn_skus   = len(df_inv_f[df_inv_f["days_of_inventory"] < 14])
+    avg_doi     = df_inv_f["days_of_inventory"].mean() if total_skus > 0 else 0.0
+    total_val   = (df_inv_f["stock_units"] * df_inv_f["unit_cost"]).sum() if total_skus > 0 else 0.0
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -84,7 +55,7 @@ def render(df_orders: pd.DataFrame):
             "<div style='font-size:0.9rem;font-weight:600;color:#a1a1aa;margin-bottom:8px;'>ABC/XYZ CLASSIFICATION MATRIX (SKU Count)</div>",
             unsafe_allow_html=True,
         )
-        matrix = df_inv.pivot_table(
+        matrix = df_inv_f.pivot_table(
             index="abc_class", columns="xyz_class",
             values="sku", aggfunc="count", fill_value=0,
         )
@@ -102,7 +73,7 @@ def render(df_orders: pd.DataFrame):
             "<div style='font-size:0.9rem;font-weight:600;color:#a1a1aa;margin-bottom:8px;'>ABC DISTRIBUTION — SKU Value Concentration</div>",
             unsafe_allow_html=True,
         )
-        abc_counts = df_inv.groupby("abc_class").agg(
+        abc_counts = df_inv_f.groupby("abc_class").agg(
             sku_count=("sku", "count"),
             stock_val=("stock_units", "sum"),
         ).reset_index()
@@ -120,7 +91,7 @@ def render(df_orders: pd.DataFrame):
         "<div style='font-size:0.9rem;font-weight:600;color:#a1a1aa;margin:12px 0 8px;'>STOCKOUT RISK RADAR — SKUs with < 14 Days of Stock</div>",
         unsafe_allow_html=True,
     )
-    crit_table = df_inv[df_inv["days_of_inventory"] < 14].sort_values("days_of_inventory").head(10)
+    crit_table = df_inv_f[df_inv_f["days_of_inventory"] < 14].sort_values("days_of_inventory").head(10)
     if len(crit_table) > 0:
         for _, row in crit_table.iterrows():
             doi   = max(0.0, float(row["days_of_inventory"]))
@@ -145,4 +116,4 @@ def render(df_orders: pd.DataFrame):
         st.success("✅ No SKUs in critical stockout zone (< 14 days).")
 
     # ── Export ─────────────────────────────────────────────────────────────────
-    render_export_button(df_inv, "inventory_abc_xyz_analysis.csv")
+    render_export_button(df_inv_f, "inventory_abc_xyz_analysis.csv")

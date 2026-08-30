@@ -1,24 +1,16 @@
-﻿# projects/gaming/page4_monetization.py
+# projects/gaming/page4_monetization.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_gaming_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar Filters ───────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            channels = st.multiselect(
-                "Acquisition Channel",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            level_range = st.slider("Player Level Range", 1, 50, (1, 50))
-            payers_only = st.checkbox("Paying Players Only", value=False)
 
-    df_f = df[df["channel"].isin(channels) & df["level"].between(level_range[0], level_range[1])].copy()
-    if payers_only:
-        df_f = df_f[df_f["iap_spend"] > 0]
+def render(df: pd.DataFrame) -> None:
+    """Render the Monetization & Whale Economics analytics dashboard."""
+    df_f = build_gaming_filters(df, key_prefix="game_p4")
+    if check_empty_state(df_f, "players"):
+        return
 
     render_section_header(
         "Monetization & Whale Economics",
@@ -48,12 +40,17 @@ def render(df):
     with c1:
         st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>SPENDER SEGMENT TIERING</div>", unsafe_allow_html=True)
         def classify_spender(val):
-            if val == 0: return "Free Player ($0)"
-            elif val < 10: return "Minnow ($1-$9)"
-            elif val < 50: return "Dolphin ($10-$49)"
-            else: return "Whale ($50+)"
-        df_f["spender_tier"] = df_f["iap_spend"].apply(classify_spender)
-        sp_agg = df_f.groupby("spender_tier").agg(Revenue=("iap_spend", "sum"), Players=("player_id", "count")).reset_index()
+            if val == 0:
+                return "Free Player ($0)"
+            elif val < 10:
+                return "Minnow ($1-$9)"
+            elif val < 50:
+                return "Dolphin ($10-$49)"
+            else:
+                return "Whale ($50+)"
+        df_f_copy = df_f.copy()
+        df_f_copy["spender_tier"] = df_f_copy["iap_spend"].apply(classify_spender)
+        sp_agg = df_f_copy.groupby("spender_tier").agg(Revenue=("iap_spend", "sum"), Players=("player_id", "count")).reset_index()
         fig_b = px.bar(
             sp_agg, x="spender_tier", y="Revenue", color="spender_tier",
             color_discrete_sequence=["#06b6d4", "#38bdf8", "#c084fc", "#ec4899"],

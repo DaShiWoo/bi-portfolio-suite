@@ -1,24 +1,16 @@
-﻿# projects/gaming/page5_retention.py
+# projects/gaming/page5_retention.py
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_gaming_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar Filters ───────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            channels = st.multiselect(
-                "Acquisition Channel",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            level_range = st.slider("Player Level Range", 1, 50, (1, 50))
-            payers_only = st.checkbox("Paying Players Only", value=False)
 
-    df_f = df[df["channel"].isin(channels) & df["level"].between(level_range[0], level_range[1])].copy()
-    if payers_only:
-        df_f = df_f[df_f["iap_spend"] > 0]
+def render(df: pd.DataFrame) -> None:
+    """Render the Retention Benchmark Simulator page."""
+    df_f = build_gaming_filters(df, key_prefix="game_p5")
+    if check_empty_state(df_f, "players"):
+        return
 
     render_section_header(
         "Retention Benchmark Simulator",
@@ -60,16 +52,27 @@ def render(df):
     with c3:
         render_kpi("Simulated D1 Retention", f"{sim_d1:.1f}%", delta=f"+{d1_boost:.1f}% boost applied", is_positive=True, badge="SIM D1")
 
-    st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>SIMULATED RETENTION CURVE TRAJECTORY</div>", unsafe_allow_html=True)
     days = ["D1", "D3", "D7", "D14", "D21", "D30"]
     base_curve = [base_d1, base_d3, base_d7, base_d14, base_d21, base_d30]
     sim_curve = [sim_d1, sim_d3, sim_d7, sim_d14, sim_d21, sim_d30]
+    lifts = [round(s - b, 1) for s, b in zip(sim_curve, base_curve)]
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=days, y=base_curve, name="Actual Baseline (Filtered)", line=dict(color="rgba(255,255,255,0.4)", width=2, dash="dash")))
-    fig.add_trace(go.Scatter(x=days, y=sim_curve, name="Optimized Retention Curve", line=dict(color="#06b6d4", width=3), marker=dict(size=8, color="#ec4899"), fill="tonexty", fillcolor="rgba(6, 182, 212, 0.15)"))
-    fig.update_layout(**get_plotly_layout("gaming", height=300))
-    st.plotly_chart(fig, use_container_width=True)
+    c1, c2 = st.columns([7, 5])
+    with c1:
+        st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>SIMULATED RETENTION CURVE TRAJECTORY</div>", unsafe_allow_html=True)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=days, y=base_curve, name="Actual Baseline (Filtered)", line=dict(color="rgba(255,255,255,0.4)", width=2, dash="dash")))
+        fig.add_trace(go.Scatter(x=days, y=sim_curve, name="Optimized Retention Curve", line=dict(color="#06b6d4", width=3), marker=dict(size=8, color="#ec4899"), fill="tonexty", fillcolor="rgba(6, 182, 212, 0.15)"))
+        fig.update_layout(**get_plotly_layout("gaming", height=300))
+        st.plotly_chart(fig, use_container_width=True)
+    with c2:
+        st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #a5f3fc; margin-bottom: 8px;'>RETENTION LIFT BY MILESTONE (+% PTS)</div>", unsafe_allow_html=True)
+        fig_lift = go.Figure(go.Bar(
+            x=days, y=lifts, marker_color="#ec4899",
+            text=[f"+{v:.1f}%" for v in lifts], textposition="outside",
+        ))
+        fig_lift.update_layout(**get_plotly_layout("gaming", height=300))
+        st.plotly_chart(fig_lift, use_container_width=True)
 
     render_export_button(
         pd.DataFrame({"Day": days, "Baseline": [round(v, 1) for v in base_curve], "Simulated": [round(v, 1) for v in sim_curve]}),

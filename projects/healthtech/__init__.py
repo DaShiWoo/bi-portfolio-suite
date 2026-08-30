@@ -1,17 +1,17 @@
 ﻿# projects/healthtech/__init__.py
 import streamlit as st
-import pandas as pd
+from core.data_loader import load_health_telemetry
 from projects.healthtech import page1_icu, page2_vitals, page3_survival, page4_risk, page5_cohorts
 
-def render():
-    df = pd.read_parquet("data/health_telemetry.parquet")
+def render() -> None:
+    df = load_health_telemetry()
     
     tabs = st.tabs([
-        "🏥  1. Clinical ICU Telemetry",
-        "💓  2. Vitals Density & Telemetry",
-        "💊  3. Treatment Efficacy & Survival",
+        "🏥  1. ICU Command & Bed Census",
+        "💓  2. Cardiovascular Vitals Density",
+        "⏳  3. Clinical Survival & Readmission",
         "⚠️  4. Patient Risk Stratification",
-        "📋  5. Cohort Explorer & Discharge Simulator"
+        "🧪  5. Clinical Cohort Explorer & What-If"
     ])
     
     with tabs[0]:

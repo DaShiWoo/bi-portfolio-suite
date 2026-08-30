@@ -1,10 +1,10 @@
 ﻿# projects/saas/__init__.py
 import streamlit as st
-import pandas as pd
+from core.data_loader import load_saas_subscriptions
 from projects.saas import page1_mrr, page2_nrr, page3_churn, page4_cac, page5_forecast
 
-def render():
-    df = pd.read_parquet("data/saas_subscriptions.parquet")
+def render() -> None:
+    df = load_saas_subscriptions()
     
     tabs = st.tabs([
         "📈  1. MRR & ARR Growth Velocity",

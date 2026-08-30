@@ -1,32 +1,16 @@
-﻿# projects/fintech/page4_geo.py
+# projects/fintech/page4_geo.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_fintech_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar filters ──────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            jurisdictions = st.multiselect(
-                "Jurisdiction",
-                options=df["jurisdiction"].unique().tolist(),
-                default=df["jurisdiction"].unique().tolist(),
-            )
-            payment_methods = st.multiselect(
-                "Payment Method",
-                options=df["payment_method"].unique().tolist(),
-                default=df["payment_method"].unique().tolist(),
-            )
-            risk_range = st.slider("Risk Score Range", 0, 100, (0, 100))
 
-    # ── Apply filters ────────────────────────────────────────────────────────
-    df_f = df[
-        df["jurisdiction"].isin(jurisdictions)
-        & df["payment_method"].isin(payment_methods)
-        & (df["risk_score"] >= risk_range[0])
-        & (df["risk_score"] <= risk_range[1])
-    ]
+def render(df: pd.DataFrame) -> None:
+    """Render the Cross-Border Geolocation Risk Matrix analytics page."""
+    df_f = build_fintech_filters(df, key_prefix="fin_p4")
+    if check_empty_state(df_f, "transactions"):
+        return
 
     render_section_header(
         "Cross-Border Geolocation Risk Matrix",

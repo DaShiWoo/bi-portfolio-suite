@@ -1,35 +1,16 @@
-﻿# projects/healthtech/page4_risk.py
+# projects/healthtech/page4_risk.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_healthtech_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar Filters ───────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            wards = st.multiselect(
-                "Clinical Ward",
-                options=df["ward"].unique().tolist(),
-                default=df["ward"].unique().tolist(),
-            )
-            risk_cats = st.multiselect(
-                "Risk Category",
-                options=df["risk_category"].unique().tolist(),
-                default=df["risk_category"].unique().tolist(),
-            )
-            age_range = st.slider(
-                "Patient Age Range",
-                int(df["age"].min()), int(df["age"].max()),
-                (int(df["age"].min()), int(df["age"].max())),
-            )
 
-    df_f = df[
-        df["ward"].isin(wards) &
-        df["risk_category"].isin(risk_cats) &
-        (df["age"] >= age_range[0]) &
-        (df["age"] <= age_range[1])
-    ].copy()
+def render(df: pd.DataFrame) -> None:
+    """Render the Patient Risk Stratification & Early Decompensation page."""
+    df_f = build_healthtech_filters(df, key_prefix="health_p4")
+    if check_empty_state(df_f, "patients"):
+        return
 
     render_section_header(
         "Patient Risk Stratification & Early Decompensation",
@@ -56,8 +37,9 @@ def render(df):
     c1, c2 = st.columns([6, 6])
     with c1:
         st.markdown("<div style='font-size: 0.9rem; font-weight: 600; color: #99f6e4; margin-bottom: 8px;'>AGE BRACKET VS RISK CATEGORY</div>", unsafe_allow_html=True)
-        df_f["age_bracket"] = pd.cut(df_f["age"], bins=[18, 40, 60, 75, 100], labels=["18-39", "40-59", "60-74", "75+"])
-        age_risk = df_f.groupby(["age_bracket", "risk_category"], observed=True).size().reset_index(name="Count")
+        df_f_copy = df_f.copy()
+        df_f_copy["age_bracket"] = pd.cut(df_f_copy["age"], bins=[18, 40, 60, 75, 100], labels=["18-39", "40-59", "60-74", "75+"])
+        age_risk = df_f_copy.groupby(["age_bracket", "risk_category"], observed=True).size().reset_index(name="Count")
         fig_ar = px.bar(
             age_risk, x="age_bracket", y="Count", color="risk_category", barmode="stack",
             color_discrete_map={"Low Risk": "#14b8a6", "Moderate": "#38bdf8", "High Risk": "#f59e0b", "Critical Alert": "#f43f5e"},

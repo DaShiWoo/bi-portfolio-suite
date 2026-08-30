@@ -3,40 +3,21 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from core.filters import build_saas_filters, check_empty_state
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
 
-def render(df):
-    # ── Sidebar filters ──────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            tiers = st.multiselect(
-                "Subscription Tier",
-                options=df["tier"].unique().tolist(),
-                default=df["tier"].unique().tolist(),
-            )
-            channels = st.multiselect(
-                "Acquisition Channel",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            churned_filter = st.radio(
-                "Customer Status",
-                ["All", "Active Only", "Churned Only"],
-                index=0,
-            )
 
-    # ── Apply filters ────────────────────────────────────────────────────────
-    df_f = df[df["tier"].isin(tiers) & df["channel"].isin(channels)]
-    if churned_filter == "Active Only":
-        df_f = df_f[~df_f["churned"]]
-    elif churned_filter == "Churned Only":
-        df_f = df_f[df_f["churned"]]
-
+def render(df: pd.DataFrame) -> None:
+    """Render SaaS MRR and ARR growth velocity dashboard with waterfall and tier breakdown."""
     render_section_header(
         "MRR & ARR Growth Velocity",
         badge="RECURRING REVENUE",
         subtitle="Monthly recurring revenue bridge, expansion, contraction, and churn waterfall",
     )
+
+    df_f = build_saas_filters(df, key_prefix="saas_p1")
+    if check_empty_state(df_f, "subscribers"):
+        return
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
     total_mrr = df_f["mrr"].sum()

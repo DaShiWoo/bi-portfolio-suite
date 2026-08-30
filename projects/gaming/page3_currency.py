@@ -1,25 +1,16 @@
-﻿# projects/gaming/page3_currency.py
+# projects/gaming/page3_currency.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from core.theme import render_kpi, render_section_header, render_export_button, get_plotly_layout
+from core.filters import build_gaming_filters, check_empty_state
 
-def render(df):
-    # ── Sidebar Filters ───────────────────────────────────────────────────────
-    with st.sidebar:
-        with st.expander("🔍 FILTERS", expanded=True):
-            channels = st.multiselect(
-                "Acquisition Channel",
-                options=df["channel"].unique().tolist(),
-                default=df["channel"].unique().tolist(),
-            )
-            level_range = st.slider("Player Level Range", 1, 50, (1, 50))
-            payers_only = st.checkbox("Paying Players Only", value=False)
 
-    df_f = df[df["channel"].isin(channels) & df["level"].between(level_range[0], level_range[1])].copy()
-    if payers_only:
-        df_f = df_f[df_f["iap_spend"] > 0]
+def render(df: pd.DataFrame) -> None:
+    """Render the Virtual Currency Economy sink vs source analytics page."""
+    df_f = build_gaming_filters(df, key_prefix="game_p3")
+    if check_empty_state(df_f, "players"):
+        return
 
     render_section_header(
         "Virtual Currency Economy: Sink vs Source",
