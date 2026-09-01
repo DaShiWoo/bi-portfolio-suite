@@ -1,11 +1,11 @@
-﻿"""
+"""
 cases/support_ops_pnl/app.py
-Executive Premium Dashboard: Zendesk в†’ DuckDB OLAP Cohorts в†’ P&L
-C-Level / Head of Delivery вЂ” 300+ FTE
+Executive Premium Dashboard: Zendesk → DuckDB OLAP Cohorts → P&L
+C-Level / Head of Delivery — 300+ FTE
 
 Public API:
-  render() вЂ” embed in hub.py or any Streamlit host (no set_page_config called).
-  main()   вЂ” standalone entry point (calls set_page_config + render).
+  render() — embed in hub.py or any Streamlit host (no set_page_config called).
+  main()   — standalone entry point (calls set_page_config + render).
 """
 
 import os
@@ -22,14 +22,13 @@ from cases.support_ops_pnl.db_engine import (
     simulate_margin_sensitivity,
 )
 
-
-# в”Ђв”Ђ Premium CSS в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# ── Premium CSS ─────────────────────────────────────────────────────────────
 st.markdown("""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet">
 
 <style>
-/* в”Ђв”Ђ Reset & Base в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Reset & Base ─────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, .stApp, [data-testid="stAppViewContainer"] {
@@ -39,31 +38,31 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     -webkit-font-smoothing: antialiased;
 }
 
-/* в”Ђв”Ђ Hide Streamlit chrome в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Hide Streamlit chrome ────────────────────────────────────────────── */
 #MainMenu, footer, header { visibility: hidden; }
 [data-testid="stToolbar"] { display: none; }
 .stDeployButton { display: none; }
 
-/* в”Ђв”Ђ Layout в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Layout ───────────────────────────────────────────────────────────── */
 .block-container {
     padding: 0 !important;
     max-width: 100% !important;
 }
 .main > div { padding: 0 !important; }
 
-/* в”Ђв”Ђ Custom scrollbar в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Custom scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #070B14; }
 ::-webkit-scrollbar-thumb { background: #1E3A5F; border-radius: 4px; }
 
-/* в”Ђв”Ђ Page wrapper в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Page wrapper ─────────────────────────────────────────────────────── */
 .page-wrap {
     padding: 28px 36px 60px 36px;
     max-width: 1440px;
     margin: 0 auto;
 }
 
-/* в”Ђв”Ђ Top nav bar в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Top nav bar ──────────────────────────────────────────────────────── */
 .top-nav {
     display: flex;
     align-items: center;
@@ -96,7 +95,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 }
 .nav-sub {
     font-size: 0.72rem;
-    color: #334155;
+    color: #475569;
     font-weight: 400;
     margin-top: 1px;
 }
@@ -136,7 +135,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     color: #475569;
 }
 
-/* в”Ђв”Ђ KPI Cards в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── KPI Cards ────────────────────────────────────────────────────────── */
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -176,7 +175,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #334155;
+    color: #475569;
 }
 .kpi-badge {
     font-size: 0.65rem;
@@ -194,14 +193,14 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 }
 .kpi-foot {
     font-size: 0.725rem;
-    color: #2D3E55;
+    color: #64748B;
     font-weight: 400;
     line-height: 1.5;
     border-top: 1px solid rgba(255,255,255,0.04);
     padding-top: 10px;
     margin-top: 2px;
 }
-.kpi-foot strong { color: #3D5470; font-weight: 600; }
+.kpi-foot strong { color: #94A3B8; font-weight: 600; }
 .kpi-accent-bar {
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -210,7 +209,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     border-radius: 14px 14px 0 0;
 }
 
-/* в”Ђв”Ђ Section separator в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Section separator ────────────────────────────────────────────────── */
 .sec {
     margin: 0 0 14px 0;
     display: flex;
@@ -235,7 +234,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 }
 .sec-desc {
     font-size: 0.72rem;
-    color: #263347;
+    color: #64748B;
     font-weight: 400;
     margin-top: 1px;
 }
@@ -245,7 +244,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     background: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
 }
 
-/* в”Ђв”Ђ Insight Callout в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Insight Callout ──────────────────────────────────────────────────── */
 .insight {
     background: rgba(12, 18, 32, 0.85);
     border: 1px solid rgba(255,255,255,0.05);
@@ -253,13 +252,13 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     border-radius: 0 8px 8px 0;
     padding: 11px 14px;
     font-size: 0.78rem;
-    color: #2D4A6A;
+    color: #94A3B8;
     line-height: 1.65;
     margin-top: 12px;
 }
-.insight strong { color: #4A6B90; font-weight: 600; }
+.insight strong { color: #CBD5E1; font-weight: 600; }
 
-/* в”Ђв”Ђ Sim Result Cards в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Sim Result Cards ─────────────────────────────────────────────────── */
 .sim-card {
     background: #0C1220;
     border: 1px solid rgba(255,255,255,0.055);
@@ -275,7 +274,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     font-size: 0.67rem;
     text-transform: uppercase;
     letter-spacing: 0.11em;
-    color: #2D3E55;
+    color: #64748B;
     font-weight: 600;
     margin-bottom: 8px;
 }
@@ -289,34 +288,34 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 }
 .sim-sub {
     font-size: 0.72rem;
-    color: #263347;
+    color: #64748B;
     border-top: 1px solid rgba(255,255,255,0.04);
     padding-top: 8px;
     margin-top: 2px;
 }
-.sim-sub strong { color: #2D4A6A; }
+.sim-sub strong { color: #94A3B8; }
 
-/* в”Ђв”Ђ Slider overrides в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Slider overrides ─────────────────────────────────────────────────── */
 div[data-testid="stSlider"] p {
     font-size: 0.78rem !important;
-    color: #3D5470 !important;
+    color: #94A3B8 !important;
     font-family: 'Inter', sans-serif !important;
 }
 .stSlider [data-baseweb="slider"] { padding-bottom: 0; }
 
-/* в”Ђв”Ђ Radio overrides в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
+/* ── Radio overrides ──────────────────────────────────────────────────── */
 div[data-testid="stRadio"] p,
 div[data-testid="stRadio"] label {
     font-size: 0.78rem !important;
-    color: #3D5470 !important;
+    color: #94A3B8 !important;
 }
 
-/* в”Ђв”Ђ Streamlit caption в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
-.stCaption p { color: #263347 !important; font-size: 0.72rem !important; }
+/* ── Streamlit caption ────────────────────────────────────────────────── */
+.stCaption p { color: #64748B !important; font-size: 0.72rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# в”Ђв”Ђ SVG icons в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# ── SVG icons ───────────────────────────────────────────────────────────────
 ICONS = {
     "ticket":   '<svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>',
     "churn":    '<svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>',
@@ -350,19 +349,19 @@ def section(icon_key: str, title: str, desc: str = "", accent: str = "#2563EB") 
     """, unsafe_allow_html=True)
 
 
-# в”Ђв”Ђ Plotly shared theme в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+# ── Plotly shared theme ──────────────────────────────────────────────────────
 PLOT_LAYOUT = dict(
     paper_bgcolor="#070B14",
     plot_bgcolor="#070B14",
-    font=dict(family="Inter", color="#2D4060", size=11),
+    font=dict(family="Inter", color="#94A3B8", size=11),
     margin=dict(l=0, r=0, t=22, b=0),
     legend=dict(
         orientation="h", yanchor="bottom", y=1.01,
         xanchor="right", x=1, bgcolor="rgba(0,0,0,0)",
-        font=dict(size=10, color="#3D5470"),
+        font=dict(size=10, color="#94A3B8"),
     ),
-    xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(color="#263347", size=10)),
-    yaxis=dict(gridcolor="rgba(255,255,255,0.04)", zeroline=False, tickfont=dict(color="#263347", size=10)),
+    xaxis=dict(showgrid=False, zeroline=False, tickfont=dict(color="#64748B", size=10)),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.04)", zeroline=False, tickfont=dict(color="#64748B", size=10)),
 )
 
 
@@ -373,24 +372,24 @@ def load_db():
 
 def render() -> None:
     """Embed-safe entry point. Called by hub.py. No set_page_config."""
-    # в”Ђв”Ђ Open page wrapper в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+    # ── Open page wrapper ────────────────────────────────────────────────
     st.markdown('<div class="page-wrap">', unsafe_allow_html=True)
 
     try:
         con = load_db()
     except Exception as e:
-        st.error(f"РџРѕРјРёР»РєР° РїС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ DuckDB: {e}")
-        st.info("Р—Р°РїСѓСЃС‚С–С‚СЊ `python generate_support_data.py` РґР»СЏ РіРµРЅРµСЂР°С†С–С— РґР°РЅРёС….")
+        st.error(f"Помилка підключення до DuckDB: {e}")
+        st.info("Запустіть `python generate_support_data.py` для генерації даних.")
         st.stop()
 
-    # в”Ђв”Ђ Top navigation bar в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+    # ── Top navigation bar ───────────────────────────────────────────────
     st.markdown(f"""
         <div class="top-nav">
             <div class="nav-logo">
                 <div class="nav-logo-mark">{ico("lightning","#FFFFFF")}</div>
                 <div>
-                    <div class="nav-title">EverHelp вЂ” РђРЅР°Р»С–С‚РёРєР° РћРїРµСЂР°С†С–Р№ РџС–РґС‚СЂРёРјРєРё</div>
-                    <div class="nav-sub">Zendesk Tickets в†’ DuckDB In-Memory OLAP в†’ P&amp;L Р’РїР»РёРІ</div>
+                    <div class="nav-title">EverHelp — Аналітика Операцій Підтримки</div>
+                    <div class="nav-sub">Zendesk Tickets → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
                 </div>
             </div>
             <div class="nav-right">
@@ -401,7 +400,7 @@ def render() -> None:
         </div>
     """, unsafe_allow_html=True)
 
-    # в”Ђв”Ђ KPI Strip в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+    # ── KPI Strip ────────────────────────────────────────────────────────
     kpis = get_executive_kpis(con)
     breached = kpis["m2_churn_breached_pct"]
     clean    = kpis["m2_churn_clean_pct"]
@@ -414,13 +413,13 @@ def render() -> None:
             <div class="kpi" style="--glow:rgba(37,99,235,0.06);">
                 <div class="kpi-accent-bar" style="--accent-color:#2563EB;"></div>
                 <div class="kpi-top">
-                    <div class="kpi-tag">Р’Р°СЂС‚С–СЃС‚СЊ С‚С–РєРµС‚Сѓ</div>
-                    <div class="kpi-badge" style="background:rgba(37,99,235,0.10);color:#60A5FA;">РћРїРµСЂР°С†С–Р№РЅР°</div>
+                    <div class="kpi-tag">Вартість тікету</div>
+                    <div class="kpi-badge" style="background:rgba(37,99,235,0.10);color:#60A5FA;">Операційна</div>
                 </div>
                 <div class="kpi-num" style="color:#F1F5F9;">${kpis['blended_cost_per_ticket']:.2f}</div>
                 <div class="kpi-foot">
-                    РЎСѓРєСѓРїРЅС– РІРёС‚СЂР°С‚Рё: <strong>${kpis['total_support_cost']:,.0f}</strong>
-                    &nbsp;В·&nbsp; {kpis['total_tickets']:,} С‚С–РєРµС‚С–РІ
+                    Сукупні витрати: <strong>${kpis['total_support_cost']:,.0f}</strong>
+                    &nbsp;·&nbsp; {kpis['total_tickets']:,} тікетів
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -430,13 +429,13 @@ def render() -> None:
             <div class="kpi" style="--glow:rgba(225,29,72,0.06);">
                 <div class="kpi-accent-bar" style="--accent-color:#E11D48;"></div>
                 <div class="kpi-top">
-                    <div class="kpi-tag">РЁС‚СЂР°С„ РІС–РґС‚РѕРєСѓ (M2)</div>
-                    <div class="kpi-badge" style="background:rgba(225,29,72,0.10);color:#FB7185;">FRT &gt; 25С…РІ</div>
+                    <div class="kpi-tag">Штраф відтоку (M2)</div>
+                    <div class="kpi-badge" style="background:rgba(225,29,72,0.10);color:#FB7185;">FRT &gt; 25хв</div>
                 </div>
                 <div class="kpi-num" style="color:#FB7185;">+{delta:.1f}%</div>
                 <div class="kpi-foot">
-                    Р— РїРѕСЂСѓС€РµРЅРЅСЏРј: <strong style="color:#F43F5E;">{breached:.1f}%</strong>
-                    &nbsp;vs&nbsp; Р‘РµР· РїРѕСЂСѓС€РµРЅСЊ: {clean:.1f}%
+                    З порушенням: <strong style="color:#F43F5E;">{breached:.1f}%</strong>
+                    &nbsp;vs&nbsp; Без порушень: {clean:.1f}%
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -446,13 +445,13 @@ def render() -> None:
             <div class="kpi" style="--glow:rgba(5,150,105,0.06);">
                 <div class="kpi-accent-bar" style="--accent-color:#059669;"></div>
                 <div class="kpi-top">
-                    <div class="kpi-tag">Р§РёСЃС‚Р° РјР°СЂР¶Р° РїС–РґС‚СЂРёРјРєРё</div>
+                    <div class="kpi-tag">Чиста маржа підтримки</div>
                     <div class="kpi-badge" style="background:rgba(5,150,105,0.10);color:#34D399;">P&amp;L</div>
                 </div>
                 <div class="kpi-num" style="color:#10B981;">{kpis['net_support_margin_pct']:.1f}%</div>
                 <div class="kpi-foot">
-                    Р§РёСЃС‚РёР№ P&amp;L: <strong>${kpis['total_net_pnl']:,.0f}</strong>
-                    &nbsp;В·&nbsp; Р’РёСЂСѓС‡РєР°: ${kpis['total_revenue']:,.0f}
+                    Чистий P&amp;L: <strong>${kpis['total_net_pnl']:,.0f}</strong>
+                    &nbsp;·&nbsp; Виручка: ${kpis['total_revenue']:,.0f}
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -462,35 +461,35 @@ def render() -> None:
             <div class="kpi" style="--glow:rgba(220,38,38,0.06);">
                 <div class="kpi-accent-bar" style="--accent-color:#DC2626;"></div>
                 <div class="kpi-top">
-                    <div class="kpi-tag">РўРѕРєСЃРёС‡РЅС– Р°РєР°СѓРЅС‚Рё</div>
-                    <div class="kpi-badge" style="background:rgba(220,38,38,0.10);color:#F87171;">Р—Р±РёС‚РєРѕРІС–</div>
+                    <div class="kpi-tag">Токсичні акаунти</div>
+                    <div class="kpi-badge" style="background:rgba(220,38,38,0.10);color:#F87171;">Збиткові</div>
                 </div>
                 <div class="kpi-num" style="color:#F87171;">{kpis['toxic_accounts_count']}</div>
                 <div class="kpi-foot">
-                    РџСЂСЏРјРёР№ Р·Р±РёС‚РѕРє: <strong style="color:#EF4444;">${kpis['toxic_loss_usd']:,.0f}</strong>
+                    Прямий збиток: <strong style="color:#EF4444;">${kpis['toxic_loss_usd']:,.0f}</strong>
                 </div>
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-    # в”Ђв”Ђ Cohort Retention Heatmap в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-    section("grid", "РљРѕРіРѕСЂС‚РЅР° РјР°С‚СЂРёС†СЏ СѓС‚СЂРёРјР°РЅРЅСЏ РєР»С–С”РЅС‚С–РІ",
-            "РЈС‚СЂРёРјР°РЅРЅСЏ РїС–РґРїРёСЃРѕРє % РІС–Рґ РњС–СЃСЏС†СЏ 0 РґРѕ РњС–СЃСЏС†СЏ 11 В· СЂРѕР·РїРѕРґС–Р» Р·Р° СЏРєС–СЃС‚СЋ SLA РѕРЅР±РѕСЂРґРёРЅРіСѓ",
+    # ── Cohort Retention Heatmap ─────────────────────────────────────────
+    section("grid", "Когортна матриця утримання клієнтів",
+            "Утримання підписок % від Місяця 0 до Місяця 11 · розподіл за якістю SLA онбордингу",
             "#2563EB")
 
     filt_col, _ = st.columns([3, 5])
     with filt_col:
         sla_toggle = st.radio(
-            "Р¤С–Р»СЊС‚СЂ СЃРµРіРјРµРЅС‚Сѓ:",
-            options=["РЈСЃС– РєРѕРіРѕСЂС‚Рё", "РџРѕСЂСѓС€РµРЅРЅСЏ SLA (>25С…РІ)", "РЇРєС–СЃРЅРёР№ РѕРЅР±РѕСЂРґРёРЅРі (в‰¤25С…РІ)"],
+            "Фільтр сегменту:",
+            options=["Усі когорти", "Порушення SLA (>25хв)", "Якісний онбординг (≤25хв)"],
             horizontal=True,
         )
 
     filter_map = {
-        "РЈСЃС– РєРѕРіРѕСЂС‚Рё":               "All",
-        "РџРѕСЂСѓС€РµРЅРЅСЏ SLA (>25С…РІ)":     "SLA Breached (>25m)",
-        "РЇРєС–СЃРЅРёР№ РѕРЅР±РѕСЂРґРёРЅРі (в‰¤25С…РІ)": "Clean Onboarding (<=25m)",
+        "Усі когорти":               "All",
+        "Порушення SLA (>25хв)":     "SLA Breached (>25m)",
+        "Якісний онбординг (≤25хв)": "Clean Onboarding (<=25m)",
     }
     df_m = get_cohort_retention_matrix(con, filter_mode=filter_map[sla_toggle])
 
@@ -509,13 +508,13 @@ def render() -> None:
     ]
 
     fig_hm = go.Figure(go.Heatmap(
-        z=z_vals, x=[f"РњС–СЃСЏС†СЊ {m}" for m in range(12)], y=cohorts,
+        z=z_vals, x=[f"Місяць {m}" for m in range(12)], y=cohorts,
         text=annots, texttemplate="%{text}",
         textfont={"size": 11, "color": "rgba(255,255,255,0.85)", "family": "Inter"},
         colorscale=colorscale, zmin=30, zmax=100,
         colorbar=dict(
-            title=dict(text="РЈС‚СЂРёРјР°РЅРЅСЏ %", font=dict(color="#263347", size=10, family="Inter")),
-            tickfont=dict(color="#263347", size=10, family="Inter"),
+            title=dict(text="Утримання %", font=dict(color="#64748B", size=10, family="Inter")),
+            tickfont=dict(color="#64748B", size=10, family="Inter"),
             thickness=10, len=0.92, outlinewidth=0,
         ),
         hoverongaps=False,
@@ -523,86 +522,86 @@ def render() -> None:
     ))
     layout = {**PLOT_LAYOUT, "height": 360}
     layout["yaxis"] = dict(gridcolor="rgba(255,255,255,0.03)", autorange="reversed",
-                           tickfont=dict(color="#3D5470", size=10.5, family="Inter"), zeroline=False)
+                           tickfont=dict(color="#94A3B8", size=10.5, family="Inter"), zeroline=False)
     layout["xaxis"] = dict(showgrid=False, zeroline=False,
-                           tickfont=dict(color="#263347", size=10, family="Inter"))
+                           tickfont=dict(color="#64748B", size=10, family="Inter"))
     fig_hm.update_layout(**layout)
     st.plotly_chart(fig_hm, use_container_width=True)
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # в”Ђв”Ђ Unit Economics + Channel в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+    # ── Unit Economics + Channel ─────────────────────────────────────────
     cu1, cu2 = st.columns(2, gap="medium")
 
     with cu1:
-        section("bar", "Р®РЅС–С‚-РµРєРѕРЅРѕРјС–РєР° Р·Р° С‚Р°СЂРёС„РЅРёРј РїР»Р°РЅРѕРј",
-                "РЎРµСЂРµРґРЅС–Р№ LTV РєР»С–С”РЅС‚Р° vs РІРёС‚СЂР°С‚Рё РЅР° РїС–РґС‚СЂРёРјРєСѓ ($)", "#2563EB")
+        section("bar", "Юніт-економіка за тарифним планом",
+                "Середній LTV клієнта vs витрати на підтримку ($)", "#2563EB")
         df_t = get_tier_pnl_breakdown(con)
 
         fig_t = go.Figure()
         fig_t.add_trace(go.Bar(
-            name="РЎРµСЂРµРґРЅС–Р№ LTV ($)",
+            name="Середній LTV ($)",
             x=df_t["plan_tier"], y=df_t["avg_ltv_per_user"],
             marker=dict(color="#1D4ED8", opacity=0.9, cornerradius=4),
         ))
         fig_t.add_trace(go.Bar(
-            name="Р’РёС‚СЂР°С‚Рё РїС–РґС‚СЂРёРјРєРё ($)",
+            name="Витрати підтримки ($)",
             x=df_t["plan_tier"], y=df_t["avg_support_cost_per_user"],
             marker=dict(color="#E11D48", opacity=0.8, cornerradius=4),
         ))
         lyt = {**PLOT_LAYOUT, "height": 260, "barmode": "group", "bargap": 0.28}
         lyt["yaxis"] = dict(gridcolor="rgba(255,255,255,0.04)", zeroline=False,
-                            tickfont=dict(color="#263347", size=10))
+                            tickfont=dict(color="#64748B", size=10))
         fig_t.update_layout(**lyt)
         st.plotly_chart(fig_t, use_container_width=True)
         st.markdown("""
             <div class="insight" style="--accent-color:#E11D48;">
-                <strong>Basic-С‚Р°СЂРёС„ ($19)</strong>: РІРёСЃРѕРєР° С‡Р°СЃС‚РѕС‚Р° С‚С–РєРµС‚С–РІ С‡РµСЂРµР· Email С„РѕСЂРјСѓС”
-                РїСЂСЏРјСѓ РЅРµРіР°С‚РёРІРЅСѓ РјР°СЂР¶Сѓ вЂ” РґР¶РµСЂРµР»Рѕ С‚РѕРєСЃРёС‡РЅРёС… Р°РєР°СѓРЅС‚С–РІ.
+                <strong>Basic-тариф ($19)</strong>: висока частота тікетів через Email формує 
+                пряму негативну маржу — джерело токсичних акаунтів.
             </div>
         """, unsafe_allow_html=True)
 
     with cu2:
-        section("channel", "РџСЂРѕС„С–Р»СЊ РєР°РЅР°Р»С–РІ РїС–РґС‚СЂРёРјРєРё",
-                "Р’Р°СЂС‚С–СЃС‚СЊ С‚С–РєРµС‚Сѓ С‚Р° СЂС–РІРµРЅСЊ РїРѕСЂСѓС€РµРЅСЊ SLA РїРѕ РєР°РЅР°Р»Р°С… Р·РІ'СЏР·РєСѓ", "#7C3AED")
+        section("channel", "Профіль каналів підтримки",
+                "Вартість тікету та рівень порушень SLA по каналах зв'язку", "#7C3AED")
         df_ch = get_channel_metrics(con)
 
         fig_ch = go.Figure()
         fig_ch.add_trace(go.Bar(
             x=df_ch["channel"], y=df_ch["cost_per_ticket"],
-            name="Р’Р°СЂС‚С–СЃС‚СЊ С‚С–РєРµС‚Сѓ ($)",
+            name="Вартість тікету ($)",
             marker=dict(color="#5B21B6", opacity=0.9, cornerradius=4),
             text=df_ch["cost_per_ticket"].apply(lambda v: f"${v:.2f}"),
             textposition="auto",
-            textfont=dict(color="rgba(255,255,255,0.7)", size=11, family="Inter"),
+            textfont=dict(color="rgba(255,255,255,0.85)", size=11, family="Inter"),
         ))
         fig_ch.add_trace(go.Scatter(
             x=df_ch["channel"], y=df_ch["sla_breach_pct"],
-            name="РџРѕСЂСѓС€РµРЅРЅСЏ SLA (%)", yaxis="y2",
+            name="Порушення SLA (%)", yaxis="y2",
             mode="lines+markers",
             marker=dict(size=8, color="#E11D48", line=dict(width=2, color="#070B14")),
             line=dict(width=2.5, color="#E11D48"),
         ))
         lyt2 = {**PLOT_LAYOUT, "height": 260, "bargap": 0.32}
         lyt2["yaxis"]  = dict(gridcolor="rgba(255,255,255,0.04)", zeroline=False,
-                               tickfont=dict(color="#263347", size=10))
+                               tickfont=dict(color="#64748B", size=10))
         lyt2["yaxis2"] = dict(overlaying="y", side="right", showgrid=False, zeroline=False,
-                               tickfont=dict(color="#263347", size=10),
-                               title=dict(text="SLA Breach %", font=dict(color="#263347", size=10)))
+                               tickfont=dict(color="#64748B", size=10),
+                               title=dict(text="SLA Breach %", font=dict(color="#64748B", size=10)))
         fig_ch.update_layout(**lyt2)
         st.plotly_chart(fig_ch, use_container_width=True)
         st.markdown("""
             <div class="insight" style="--accent-color:#7C3AED;">
-                <strong>Email</strong> вЂ” РЅР°Р№РґРѕСЂРѕР¶С‡РёР№ РєР°РЅР°Р» ($14.00) Р· РЅР°Р№РІРёС‰РёРј СЂС–РІРЅРµРј РїРѕСЂСѓС€РµРЅСЊ SLA.
-                РџРµСЂРµРІРµРґРµРЅРЅСЏ С‚СЂР°С„С–РєСѓ РЅР° Chat + AI-РґРµС„Р»РµРєС†С–СЏ РґР°С” РїСЂСЏРјСѓ OPEX-РµРєРѕРЅРѕРјС–СЋ.
+                <strong>Email</strong> — найдорожчий канал ($14.00) з найвищим рівнем порушень SLA.
+                Переведення трафіку на Chat + AI-дефлекція дає пряму OPEX-економію.
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
 
-    # в”Ђв”Ђ Sensitivity Simulator в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-    section("sim", "РЎРёРјСѓР»СЏС‚РѕСЂ С‡СѓС‚Р»РёРІРѕСЃС‚С– P&L",
-            "Р’РїР»РёРІ AI-РґРµС„Р»РµРєС†С–С— С‚Р° СЃРєРѕСЂРѕС‡РµРЅРЅСЏ FRT РЅР° С‡РёСЃС‚РёР№ РїСЂРёР±СѓС‚РѕРє вЂ” СЂРµР°Р»СЊРЅРёР№ С‡Р°СЃ",
+    # ── Sensitivity Simulator ────────────────────────────────────────────
+    section("sim", "Симулятор чутливості P&L",
+            "Вплив AI-дефлекції та скорочення FRT на чистий прибуток — реальний час",
             "#059669")
 
     ctrl, res = st.columns([1, 2], gap="large")
@@ -610,19 +609,19 @@ def render() -> None:
     with ctrl:
         st.markdown("""
             <div style="font-size:.68rem; text-transform:uppercase; letter-spacing:.12em;
-                        color:#1E3347; font-weight:700; margin-bottom:16px;">
-                РћРїРµСЂР°С†С–Р№РЅС– РІР°Р¶РµР»С–
+                        color:#475569; font-weight:700; margin-bottom:16px;">
+                Операційні важелі
             </div>
         """, unsafe_allow_html=True)
         frt_pct = st.slider(
-            "РЎРєРѕСЂРѕС‡РµРЅРЅСЏ С‡Р°СЃСѓ РїРµСЂС€РѕС— РІС–РґРїРѕРІС–РґС– (FRT), %",
+            "Скорочення часу першої відповіді (FRT), %",
             min_value=0, max_value=60, value=25, step=5,
-            help="Р—РјРµРЅС€СѓС” РїРѕСЂСѓС€РµРЅРЅСЏ SLA РїС–Рґ С‡Р°СЃ РѕРЅР±РѕСЂРґРёРЅРіСѓ С‚Р° С€С‚СЂР°С„ РІС–РґС‚РѕРєСѓ Сѓ 2-Р№ РјС–СЃСЏС†СЊ.",
+            help="Зменшує порушення SLA під час онбордингу та штраф відтоку у 2-й місяць.",
         )
         defl_pct = st.slider(
-            "AI-РґРµС„Р»РµРєС†С–СЏ С‚Р° СЃР°РјРѕРѕР±СЃР»СѓРіРѕРІСѓРІР°РЅРЅСЏ, %",
+            "AI-дефлекція та самообслуговування, %",
             min_value=0, max_value=50, value=20, step=5,
-            help="РђРІС‚РѕРјР°С‚РёР·СѓС” С‚РёРїРѕРІС– Email/Chat С‚С–РєРµС‚Рё Р±РµР· РІРёС‚СЂР°С‚ РЅР° FTE-СЂРµСЃСѓСЂСЃ.",
+            help="Автоматизує типові Email/Chat тікети без витрат на FTE-ресурс.",
         )
 
     sim = simulate_margin_sensitivity(con, frt_reduction_pct=frt_pct, ai_deflection_pct=defl_pct)
@@ -632,50 +631,50 @@ def render() -> None:
         with sr1:
             st.markdown(f"""
                 <div class="sim-card" style="--accent-color:#2563EB;">
-                    <div class="sim-label">Р•РєРѕРЅРѕРјС–СЏ РѕРїРµСЂР°С†С–Р№РЅРёС… РІРёС‚СЂР°С‚</div>
+                    <div class="sim-label">Економія операційних витрат</div>
                     <div class="sim-value" style="color:#60A5FA;">${sim['deflected_cost_savings']:,.0f}</div>
-                    <div class="sim-sub">Р’РёРІС–Р»СЊРЅРµРЅРѕ FTE-СЂРµСЃСѓСЂСЃС–РІ Р·Р° СЂР°С…СѓРЅРѕРє Р°РІС‚РѕРјР°С‚РёР·Р°С†С–С—</div>
+                    <div class="sim-sub">Вивільнено FTE-ресурсів за рахунок автоматизації</div>
                 </div>
             """, unsafe_allow_html=True)
         with sr2:
             st.markdown(f"""
                 <div class="sim-card" style="--accent-color:#059669;">
-                    <div class="sim-label">Р—Р°С…РёС‰РµРЅРёР№ ARR РїС–РґРїРёСЃРѕРє</div>
+                    <div class="sim-label">Захищений ARR підписок</div>
                     <div class="sim-value" style="color:#10B981;">${sim['revenue_preserved']:,.0f}</div>
-                    <div class="sim-sub"><strong>~{sim['saved_m2_accounts']} Р°РєР°СѓРЅС‚С–РІ</strong> СѓС‚СЂРёРјР°РЅРѕ РІС–Рґ РІС–РґС‚РѕРєСѓ</div>
+                    <div class="sim-sub"><strong>~{sim['saved_m2_accounts']} акаунтів</strong> утримано від відтоку</div>
                 </div>
             """, unsafe_allow_html=True)
         with sr3:
             st.markdown(f"""
                 <div class="sim-card" style="--accent-color:#7C3AED;">
-                    <div class="sim-label">РџСЂРёСЂС–СЃС‚ С‡РёСЃС‚РѕРіРѕ P&amp;L Р·Р° СЂС–Рє</div>
+                    <div class="sim-label">Приріст чистого P&amp;L за рік</div>
                     <div class="sim-value" style="color:#A78BFA;">+${sim['annual_pnl_lift']:,.0f}</div>
                     <div class="sim-sub">
-                        РњР°СЂР¶Р°: <strong>{sim['simulated_margin_pct']:.1f}%</strong>
-                        &nbsp;(+{sim['margin_delta_pp']:.1f}% Рї.Рї.)
+                        Маржа: <strong>{sim['simulated_margin_pct']:.1f}%</strong>
+                        &nbsp;(+{sim['margin_delta_pp']:.1f}% п.п.)
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
         st.markdown(f"""
             <div class="insight" style="--accent-color:#059669; margin-top:14px;">
-                <strong>Р’РёСЃРЅРѕРІРѕРє РґР»СЏ Head of Ops:</strong> РџРѕС”РґРЅР°РЅРЅСЏ
-                <strong>{defl_pct}% AI-РґРµС„Р»РµРєС†С–С—</strong> Tier-1 С‚С–РєРµС‚С–РІ С–Р·
-                <strong>СЃРєРѕСЂРѕС‡РµРЅРЅСЏРј FRT РЅР° {frt_pct}%</strong> РїС–Рґ С‡Р°СЃ РѕРЅР±РѕСЂРґРёРЅРіСѓ
-                С„РѕСЂРјСѓС” <strong>+${sim['annual_pnl_lift']:,.0f} СЂС–С‡РЅРѕРіРѕ P&amp;L</strong>
-                Р±РµР· СЂРѕР·С€РёСЂРµРЅРЅСЏ С€С‚Р°С‚Сѓ 300+ FTE.
+                <strong>Висновок для Head of Ops:</strong> Поєднання
+                <strong>{defl_pct}% AI-дефлекції</strong> Tier-1 тікетів із
+                <strong>скороченням FRT на {frt_pct}%</strong> під час онбордингу
+                формує <strong>+${sim['annual_pnl_lift']:,.0f} річного P&amp;L</strong>
+                без розширення штату 300+ FTE.
             </div>
         """, unsafe_allow_html=True)
 
-    # в”Ђв”Ђ Close page wrapper в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+    # ── Close page wrapper ───────────────────────────────────────────────
     st.markdown("</div>", unsafe_allow_html=True)
 
 
 def main() -> None:
     """Standalone entry point for direct `streamlit run app.py` launch."""
     st.set_page_config(
-        page_title="EverHelp вЂ” Support Ops P&L",
-        page_icon="вљЎ",
+        page_title="EverHelp — Support Ops P&L",
+        page_icon="⚡",
         layout="wide",
         initial_sidebar_state="collapsed",
     )
@@ -684,4 +683,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
