@@ -22,8 +22,8 @@ from cases.support_ops_pnl.db_engine import (
     simulate_margin_sensitivity,
 )
 
-# ── Premium CSS ─────────────────────────────────────────────────────────────
-st.markdown("""
+# ── Premium CSS Definition (Injected inside render()) ────────────────────────
+PREMIUM_CSS = """
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet">
 
@@ -43,13 +43,6 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 [data-testid="stToolbar"] { display: none; }
 .stDeployButton { display: none; }
 
-/* ── Layout ───────────────────────────────────────────────────────────── */
-.block-container {
-    padding: 0 !important;
-    max-width: 100% !important;
-}
-.main > div { padding: 0 !important; }
-
 /* ── Custom scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #070B14; }
@@ -57,7 +50,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 
 /* ── Page wrapper ─────────────────────────────────────────────────────── */
 .page-wrap {
-    padding: 28px 36px 60px 36px;
+    padding: 16px 20px 60px 20px;
     max-width: 1440px;
     margin: 0 auto;
 }
@@ -67,9 +60,9 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0 24px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    margin-bottom: 28px;
+    padding: 0 0 20px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 24px;
 }
 .nav-logo {
     display: flex;
@@ -77,39 +70,41 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     gap: 12px;
 }
 .nav-logo-mark {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-    border-radius: 8px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 0 20px rgba(37,99,235,0.35);
+    flex-shrink: 0;
 }
 .nav-logo-mark svg { width: 18px; height: 18px; }
 .nav-title {
-    font-size: 0.88rem;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 700;
     color: #F1F5F9;
     letter-spacing: -0.01em;
 }
 .nav-sub {
-    font-size: 0.72rem;
-    color: #475569;
+    font-size: 0.75rem;
+    color: #64748B;
     font-weight: 400;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 .nav-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 .pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(37, 99, 235, 0.08);
-    border: 1px solid rgba(37, 99, 235, 0.18);
+    background: rgba(37, 99, 235, 0.12);
+    border: 1px solid rgba(37, 99, 235, 0.25);
     border-radius: 20px;
     padding: 5px 12px;
     font-size: 0.70rem;
@@ -126,35 +121,30 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 }
 @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.25;} }
 .pill-neutral {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 20px;
     padding: 5px 12px;
     font-size: 0.70rem;
     font-weight: 500;
-    color: #475569;
+    color: #94A3B8;
 }
 
 /* ── KPI Cards ────────────────────────────────────────────────────────── */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 32px;
-}
 .kpi {
-    background: #0C1220;
-    border: 1px solid rgba(255,255,255,0.055);
-    border-radius: 14px;
-    padding: 22px 22px 18px 22px;
-    position: relative;
-    overflow: hidden;
+    background: #0C1220 !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 14px !important;
+    padding: 20px 22px 18px 22px !important;
+    position: relative !important;
+    overflow: hidden !important;
     transition: border-color .25s, box-shadow .25s;
-    cursor: default;
+    margin-bottom: 14px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35) !important;
 }
 .kpi:hover {
-    border-color: rgba(255,255,255,0.10);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.15) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
 }
 .kpi::after {
     content: "";
@@ -168,19 +158,19 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 .kpi-tag {
-    font-size: 0.675rem;
+    font-size: 0.70rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #475569;
+    letter-spacing: 0.10em;
+    color: #64748B;
 }
 .kpi-badge {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 10px;
     letter-spacing: 0.04em;
 }
@@ -188,90 +178,92 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     font-size: 2.15rem;
     font-weight: 800;
     letter-spacing: -0.04em;
-    line-height: 1;
+    line-height: 1.05;
     margin-bottom: 10px;
 }
 .kpi-foot {
-    font-size: 0.725rem;
+    font-size: 0.74rem;
     color: #64748B;
     font-weight: 400;
     line-height: 1.5;
-    border-top: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.05);
     padding-top: 10px;
-    margin-top: 2px;
+    margin-top: 4px;
 }
-.kpi-foot strong { color: #94A3B8; font-weight: 600; }
+.kpi-foot strong { color: #CBD5E1; font-weight: 600; }
 .kpi-accent-bar {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 3px;
     background: var(--accent-color, #2563EB);
     border-radius: 14px 14px 0 0;
 }
 
 /* ── Section separator ────────────────────────────────────────────────── */
 .sec {
-    margin: 0 0 14px 0;
+    margin: 24px 0 14px 0;
     display: flex;
     align-items: center;
     gap: 12px;
 }
 .sec-icon {
-    width: 30px; height: 30px;
+    width: 32px; height: 32px;
     background: #0C1220;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
-.sec-icon svg { width: 14px; height: 14px; }
+.sec-icon svg { width: 16px; height: 16px; }
 .sec-text { flex: 1; }
 .sec-title {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     font-weight: 600;
     color: #CBD5E1;
     letter-spacing: -0.01em;
 }
 .sec-desc {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     color: #64748B;
     font-weight: 400;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 .sec-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
+    background: linear-gradient(to right, rgba(255,255,255,0.06), transparent);
 }
 
 /* ── Insight Callout ──────────────────────────────────────────────────── */
 .insight {
-    background: rgba(12, 18, 32, 0.85);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-left: 2px solid var(--accent-color, #2563EB);
-    border-radius: 0 8px 8px 0;
-    padding: 11px 14px;
-    font-size: 0.78rem;
-    color: #94A3B8;
-    line-height: 1.65;
-    margin-top: 12px;
+    background: rgba(12, 18, 32, 0.90) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-left: 3px solid var(--accent-color, #2563EB) !important;
+    border-radius: 0 8px 8px 0 !important;
+    padding: 12px 16px !important;
+    font-size: 0.80rem !important;
+    color: #94A3B8 !important;
+    line-height: 1.65 !important;
+    margin-top: 12px !important;
 }
-.insight strong { color: #CBD5E1; font-weight: 600; }
+.insight strong { color: #F1F5F9; font-weight: 600; }
 
 /* ── Sim Result Cards ─────────────────────────────────────────────────── */
 .sim-card {
-    background: #0C1220;
-    border: 1px solid rgba(255,255,255,0.055);
-    border-left: 2px solid var(--accent-color, #2563EB);
-    border-radius: 0 12px 12px 0;
-    padding: 18px 18px 14px 18px;
+    background: #0C1220 !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-left: 3px solid var(--accent-color, #2563EB) !important;
+    border-radius: 0 12px 12px 0 !important;
+    padding: 18px 20px 16px 20px !important;
+    margin-bottom: 10px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
 }
 .sim-card:hover {
-    border-color: rgba(255,255,255,0.10);
-    border-left-color: var(--accent-color);
+    border-color: rgba(255,255,255,0.12) !important;
+    border-left-color: var(--accent-color) !important;
 }
 .sim-label {
-    font-size: 0.67rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 0.11em;
     color: #64748B;
@@ -279,7 +271,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     margin-bottom: 8px;
 }
 .sim-value {
-    font-size: 1.6rem;
+    font-size: 1.7rem;
     font-weight: 800;
     letter-spacing: -0.04em;
     color: var(--accent-color, #60A5FA);
@@ -287,17 +279,46 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     margin-bottom: 8px;
 }
 .sim-sub {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     color: #64748B;
-    border-top: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.05);
     padding-top: 8px;
-    margin-top: 2px;
+    margin-top: 4px;
 }
-.sim-sub strong { color: #94A3B8; }
+.sim-sub strong { color: #CBD5E1; }
+
+/* ── Responsive adjustments for mobile ────────────────────────────────── */
+@media (max-width: 768px) {
+    .page-wrap {
+        padding: 10px 12px 50px 12px !important;
+    }
+    .top-nav {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .nav-right {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+    .kpi {
+        padding: 16px 18px 14px 18px !important;
+        margin-bottom: 12px !important;
+    }
+    .kpi-num {
+        font-size: 1.85rem !important;
+    }
+    .sim-card {
+        padding: 14px 16px !important;
+    }
+    .sim-value {
+        font-size: 1.45rem !important;
+    }
+}
 
 /* ── Slider overrides ─────────────────────────────────────────────────── */
 div[data-testid="stSlider"] p {
-    font-size: 0.78rem !important;
+    font-size: 0.80rem !important;
     color: #94A3B8 !important;
     font-family: 'Inter', sans-serif !important;
 }
@@ -306,14 +327,14 @@ div[data-testid="stSlider"] p {
 /* ── Radio overrides ──────────────────────────────────────────────────── */
 div[data-testid="stRadio"] p,
 div[data-testid="stRadio"] label {
-    font-size: 0.78rem !important;
+    font-size: 0.80rem !important;
     color: #94A3B8 !important;
 }
 
 /* ── Streamlit caption ────────────────────────────────────────────────── */
-.stCaption p { color: #64748B !important; font-size: 0.72rem !important; }
+.stCaption p { color: #64748B !important; font-size: 0.74rem !important; }
 </style>
-""", unsafe_allow_html=True)
+"""
 
 # ── SVG icons ───────────────────────────────────────────────────────────────
 ICONS = {
@@ -339,7 +360,7 @@ def section(icon_key: str, title: str, desc: str = "", accent: str = "#2563EB") 
     desc_html = f'<div class="sec-desc">{desc}</div>' if desc else ""
     st.markdown(f"""
         <div class="sec">
-            <div class="sec-icon" style="border-color:rgba(255,255,255,0.07);">{ico(icon_key, accent)}</div>
+            <div class="sec-icon" style="border-color:rgba(255,255,255,0.08);">{ico(icon_key, accent)}</div>
             <div class="sec-text">
                 <div class="sec-title">{title}</div>
                 {desc_html}
@@ -371,7 +392,10 @@ def load_db():
 
 
 def render() -> None:
-    """Embed-safe entry point. Called by hub.py. No set_page_config."""
+    """Embed-safe entry point. Called by hub.py. Injects CSS on every run."""
+    # ── Inject CSS on every execution ────────────────────────────────────
+    st.markdown(PREMIUM_CSS, unsafe_allow_html=True)
+
     # ── Open page wrapper ────────────────────────────────────────────────
     st.markdown('<div class="page-wrap">', unsafe_allow_html=True)
 
@@ -384,15 +408,15 @@ def render() -> None:
 
     # ── Top navigation bar ───────────────────────────────────────────────
     st.markdown(f"""
-        <div class="top-nav">
-            <div class="nav-logo">
+        <div class="top-nav" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:18px; margin-bottom:24px;">
+            <div class="nav-logo" style="display:flex; align-items:center; gap:12px;">
                 <div class="nav-logo-mark">{ico("lightning","#FFFFFF")}</div>
                 <div>
-                    <div class="nav-title">EverHelp — Аналітика Операцій Підтримки</div>
-                    <div class="nav-sub">Zendesk Tickets → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
+                    <div class="nav-title" style="font-size:1.05rem; font-weight:700; color:#F1F5F9;">EverHelp — Аналітика Операцій Підтримки</div>
+                    <div class="nav-sub" style="font-size:0.75rem; color:#64748B; margin-top:2px;">Zendesk Tickets → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
                 </div>
             </div>
-            <div class="nav-right">
+            <div class="nav-right" style="display:flex; align-items:center; gap:10px;">
                 <div class="pill"><div class="pulse"></div> LIVE OLAP</div>
                 <div class="pill-neutral">300+ FTE</div>
                 <div class="pill-neutral">C-Level Audit</div>
@@ -410,11 +434,11 @@ def render() -> None:
 
     with c1:
         st.markdown(f"""
-            <div class="kpi" style="--glow:rgba(37,99,235,0.06);">
+            <div class="kpi" style="--glow:rgba(37,99,235,0.08); background:#0C1220; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px 22px 18px 22px; margin-bottom:14px; position:relative; overflow:hidden;">
                 <div class="kpi-accent-bar" style="--accent-color:#2563EB;"></div>
                 <div class="kpi-top">
                     <div class="kpi-tag">Вартість тікету</div>
-                    <div class="kpi-badge" style="background:rgba(37,99,235,0.10);color:#60A5FA;">Операційна</div>
+                    <div class="kpi-badge" style="background:rgba(37,99,235,0.14);color:#60A5FA;">Операційна</div>
                 </div>
                 <div class="kpi-num" style="color:#F1F5F9;">${kpis['blended_cost_per_ticket']:.2f}</div>
                 <div class="kpi-foot">
@@ -426,11 +450,11 @@ def render() -> None:
 
     with c2:
         st.markdown(f"""
-            <div class="kpi" style="--glow:rgba(225,29,72,0.06);">
+            <div class="kpi" style="--glow:rgba(225,29,72,0.08); background:#0C1220; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px 22px 18px 22px; margin-bottom:14px; position:relative; overflow:hidden;">
                 <div class="kpi-accent-bar" style="--accent-color:#E11D48;"></div>
                 <div class="kpi-top">
                     <div class="kpi-tag">Штраф відтоку (M2)</div>
-                    <div class="kpi-badge" style="background:rgba(225,29,72,0.10);color:#FB7185;">FRT &gt; 25хв</div>
+                    <div class="kpi-badge" style="background:rgba(225,29,72,0.14);color:#FB7185;">FRT &gt; 25хв</div>
                 </div>
                 <div class="kpi-num" style="color:#FB7185;">+{delta:.1f}%</div>
                 <div class="kpi-foot">
@@ -442,11 +466,11 @@ def render() -> None:
 
     with c3:
         st.markdown(f"""
-            <div class="kpi" style="--glow:rgba(5,150,105,0.06);">
+            <div class="kpi" style="--glow:rgba(5,150,105,0.08); background:#0C1220; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px 22px 18px 22px; margin-bottom:14px; position:relative; overflow:hidden;">
                 <div class="kpi-accent-bar" style="--accent-color:#059669;"></div>
                 <div class="kpi-top">
                     <div class="kpi-tag">Чиста маржа підтримки</div>
-                    <div class="kpi-badge" style="background:rgba(5,150,105,0.10);color:#34D399;">P&amp;L</div>
+                    <div class="kpi-badge" style="background:rgba(5,150,105,0.14);color:#34D399;">P&amp;L</div>
                 </div>
                 <div class="kpi-num" style="color:#10B981;">{kpis['net_support_margin_pct']:.1f}%</div>
                 <div class="kpi-foot">
@@ -458,11 +482,11 @@ def render() -> None:
 
     with c4:
         st.markdown(f"""
-            <div class="kpi" style="--glow:rgba(220,38,38,0.06);">
+            <div class="kpi" style="--glow:rgba(220,38,38,0.08); background:#0C1220; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px 22px 18px 22px; margin-bottom:14px; position:relative; overflow:hidden;">
                 <div class="kpi-accent-bar" style="--accent-color:#DC2626;"></div>
                 <div class="kpi-top">
                     <div class="kpi-tag">Токсичні акаунти</div>
-                    <div class="kpi-badge" style="background:rgba(220,38,38,0.10);color:#F87171;">Збиткові</div>
+                    <div class="kpi-badge" style="background:rgba(220,38,38,0.14);color:#F87171;">Збиткові</div>
                 </div>
                 <div class="kpi-num" style="color:#F87171;">{kpis['toxic_accounts_count']}</div>
                 <div class="kpi-foot">
@@ -471,7 +495,7 @@ def render() -> None:
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
 
     # ── Cohort Retention Heatmap ─────────────────────────────────────────
     section("grid", "Когортна матриця утримання клієнтів",
@@ -597,7 +621,7 @@ def render() -> None:
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
 
     # ── Sensitivity Simulator ────────────────────────────────────────────
     section("sim", "Симулятор чутливості P&L",
@@ -609,7 +633,7 @@ def render() -> None:
     with ctrl:
         st.markdown("""
             <div style="font-size:.68rem; text-transform:uppercase; letter-spacing:.12em;
-                        color:#475569; font-weight:700; margin-bottom:16px;">
+                        color:#64748B; font-weight:700; margin-bottom:16px;">
                 Операційні важелі
             </div>
         """, unsafe_allow_html=True)
