@@ -1,12 +1,13 @@
-﻿"""
+"""
 hub.py
 Master Entry Point for the Executive BI Portfolio Suite.
-Showcases 5 complete production-grade BI dashboards with 5 deep pages each (25 total pages):
+Showcases 6 complete production-grade BI dashboards (30 total analytics views):
 - 🛍️ Marketplace & E-Commerce (Vercel Monochrome & Amber)
 - ⚡ B2B SaaS & Subscriptions (Linear Dark & Stripe Royal Indigo)
 - 🛡️ Fintech & Anti-Fraud Engine (Bloomberg Terminal & Emerald)
 - 🎮 Game LiveOps & Economy (Cyber Neon Arcade)
 - 🩺 HealthTech & Clinical Telemetry (Dark Teal & Mint Clinical)
+- 🎧 Support Ops P&L — EverHelp / Zendesk Case (37k+ In-Memory Records)
 """
 import streamlit as st
 from core.theme import apply_theme
@@ -27,10 +28,11 @@ with st.sidebar:
             ⚡ ENTERPRISE BI SUITE
         </div>
         <div style="font-size: 0.76rem; color: #a1a1aa; margin-top: 4px;">
-            5 Verticals • 25 Analytics Pages • Interactive
+            6 Verticals • 30 Analytics Views • 37k+ In-Memory Records
         </div>
     </div>
     """, unsafe_allow_html=True)
+
     
     selected_project = st.radio(
         "SELECT VERTICAL / DOMAIN:",
@@ -39,10 +41,12 @@ with st.sidebar:
             "⚡  B2B SaaS Subscriptions",
             "🛡️  Fintech & Fraud Defense",
             "🎮  Game LiveOps & Economy",
-            "🩺  HealthTech & Clinical Vitals"
+            "🩺  HealthTech & Clinical Vitals",
+            "🎧  Support Ops P&L (EverHelp / Zendesk Case)",
         ],
         index=0
     )
+
     
     st.markdown("""
     <div style="margin-top: 25px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
@@ -112,3 +116,8 @@ elif "HealthTech" in selected_project:
     """, unsafe_allow_html=True)
     from projects import healthtech
     healthtech.render()
+
+elif "Support Ops" in selected_project:
+    from cases.support_ops_pnl.app import render as render_support_ops
+    render_support_ops()
+
