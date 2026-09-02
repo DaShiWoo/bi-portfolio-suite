@@ -412,8 +412,8 @@ def render() -> None:
             <div class="nav-logo" style="display:flex; align-items:center; gap:12px;">
                 <div class="nav-logo-mark">{ico("lightning","#FFFFFF")}</div>
                 <div>
-                    <div class="nav-title" style="font-size:1.05rem; font-weight:700; color:#F1F5F9;">EverHelp — Аналітика Операцій Підтримки</div>
-                    <div class="nav-sub" style="font-size:0.75rem; color:#64748B; margin-top:2px;">Zendesk Tickets → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
+                    <div class="nav-title" style="font-size:1.05rem; font-weight:700; color:#F1F5F9;">Support Ops — Аналітика Операцій Підтримки</div>
+                    <div class="nav-sub" style="font-size:0.75rem; color:#64748B; margin-top:2px;">Zendesk Benchmark (300+ FTE Ops) → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
                 </div>
             </div>
             <div class="nav-right" style="display:flex; align-items:center; gap:10px;">
@@ -697,7 +697,7 @@ def render() -> None:
 def main() -> None:
     """Standalone entry point for direct `streamlit run app.py` launch."""
     st.set_page_config(
-        page_title="EverHelp — Support Ops P&L",
+        page_title="Support Ops & P&L Intelligence",
         page_icon="⚡",
         layout="wide",
         initial_sidebar_state="collapsed",

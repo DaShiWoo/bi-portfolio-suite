@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 title Support Ops P&L Analytics - Executive Demo (Port 8502)
 
 echo =====================================================================
-echo  EverHelp / C-Level Analytics: Support Ops P&L Intelligence
+echo  Support Operations / C-Level Analytics: Support Ops P&L Intelligence
 echo  Zendesk Tickets -^> DuckDB OLAP Cohorts -^> P&L Unit Margin
 echo =====================================================================
 echo.

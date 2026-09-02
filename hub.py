@@ -6,8 +6,8 @@ Showcases 6 complete production-grade BI dashboards (30 total analytics views):
 - ⚡ B2B SaaS & Subscriptions (Linear Dark & Stripe Royal Indigo)
 - 🛡️ Fintech & Anti-Fraud Engine (Bloomberg Terminal & Emerald)
 - 🎮 Game LiveOps & Economy (Cyber Neon Arcade)
-- 🩺 HealthTech & Clinical Telemetry (Dark Teal & Mint Clinical)
-- 🎧 Support Ops P&L — EverHelp / Zendesk Case (37k+ In-Memory Records)
+- 🩺 HealthTech & Patient Biometrics (ICU, Kaplan-Meier, Risk Scoring)
+- 🎧 Support Ops P&L — Zendesk Benchmark Case (37k+ In-Memory Records)
 """
 import streamlit as st
 from core.theme import apply_theme
@@ -42,7 +42,7 @@ with st.sidebar:
             "🛡️  Fintech & Fraud Defense",
             "🎮  Game LiveOps & Economy",
             "🩺  HealthTech & Clinical Vitals",
-            "🎧  Support Ops P&L (EverHelp / Zendesk Case)",
+            "🎧  Support Ops P&L (Zendesk Benchmark Case)",
         ],
         index=0
     )
