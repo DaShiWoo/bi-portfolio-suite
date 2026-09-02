@@ -118,6 +118,9 @@ elif "HealthTech" in selected_project:
     healthtech.render()
 
 elif "Support Ops" in selected_project:
-    from cases.support_ops_pnl.app import render as render_support_ops
-    render_support_ops()
+    import importlib
+    import cases.support_ops_pnl.app as support_ops_module
+    importlib.reload(support_ops_module)
+    support_ops_module.render()
+
 
