@@ -482,16 +482,22 @@ def render_kpi(
             f'</div>'
         )
 
-    card_html = f"""
-    <div class="bi-card">
-        <div class="kpi-title">{title} {badge_html}</div>
-        <div class="kpi-value">{value}</div>
-        {delta_html}
-        {subtext_html}
-        {progress_html}
-    </div>
-    """
+    parts = [
+        '<div class="bi-card">',
+        f'<div class="kpi-title">{title} {badge_html}</div>',
+        f'<div class="kpi-value">{value}</div>',
+    ]
+    if delta_html:
+        parts.append(delta_html)
+    if subtext_html:
+        parts.append(subtext_html)
+    if progress_html:
+        parts.append(progress_html)
+    parts.append('</div>')
+
+    card_html = "".join(parts)
     st.markdown(card_html, unsafe_allow_html=True)
+
 
 
 # ---------------------------------------------------------------------------
