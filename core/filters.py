@@ -1,4 +1,4 @@
-﻿"""
+"""
 core/filters.py
 Declarative, Reusable Filter Engine & Empty-State Manager for BI Portfolio Hub.
 Eliminates code duplication across all 25 analytics pages.
@@ -10,27 +10,48 @@ import pandas as pd
 
 
 def render_filter_status(filtered_count: int, total_count: int, entity_name: str = "records") -> None:
-    """Render a styled banner showing filter count and retention percentage."""
+    """Render a styled banner showing filter count and retention percentage with rock-solid flex alignment."""
     pct = (filtered_count / total_count * 100) if total_count > 0 else 0.0
     st.sidebar.markdown(
         f"""
         <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
             padding: 8px 12px;
-            margin-top: 10px;
-            margin-bottom: 12px;
-            font-size: 0.8rem;
+            margin-top: 12px;
+            margin-bottom: 14px;
+            font-size: 0.78rem;
             color: #94a3b8;
+            box-sizing: border-box;
         ">
-            <span style="font-weight: 600; color: #f8fafc;">⚡ Active Slice:</span>
-            {filtered_count:,} / {total_count:,} {entity_name}
-            <span style="float: right; color: #10b981; font-weight: 600;">{pct:.1f}%</span>
+            <div style="display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden;">
+                <span style="color: #60a5fa; font-size: 0.82rem; line-height: 1; flex-shrink: 0;">⚡</span>
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <strong style="color: #f8fafc; font-weight: 600;">Active Slice:</strong>
+                    <span style="color: #cbd5e1; margin-left: 2px;">{filtered_count:,} / {total_count:,}</span>
+                </span>
+            </div>
+            <span style="
+                background: rgba(16, 185, 129, 0.12);
+                border: 1px solid rgba(16, 185, 129, 0.28);
+                color: #34d399;
+                font-weight: 700;
+                font-size: 0.72rem;
+                padding: 2px 7px;
+                border-radius: 6px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            ">{pct:.1f}%</span>
         </div>
         """,
         unsafe_allow_html=True
     )
+
 
 
 def check_empty_state(df_f: pd.DataFrame, entity_name: str = "records") -> bool:

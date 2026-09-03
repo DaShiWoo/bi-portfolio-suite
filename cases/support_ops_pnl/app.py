@@ -21,6 +21,7 @@ from cases.support_ops_pnl.db_engine import (
     get_channel_metrics,
     simulate_margin_sensitivity,
 )
+from core.theme import get_profile_badge_html
 
 # ── Premium CSS Definition (Injected inside render()) ────────────────────────
 PREMIUM_CSS = """
@@ -128,6 +129,136 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     font-size: 0.70rem;
     font-weight: 500;
     color: #94A3B8;
+}
+
+/* ── Executive Profile Badge ─────────────────────────────────────────── */
+.executive-profile-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.executive-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(18, 24, 38, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 12px;
+    padding: 8px 14px 8px 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    user-select: none;
+}
+.executive-profile-card:hover {
+    border-color: rgba(99, 102, 241, 0.5) !important;
+    background: rgba(24, 32, 54, 0.88) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(37, 99, 235, 0.28) !important;
+}
+.profile-avatar-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+}
+.profile-avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+.profile-avatar-fallback {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+.profile-status-dot {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 11px;
+    height: 11px;
+    background: #10b981;
+    border: 2px solid #0b0e17;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+}
+.profile-text-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.profile-name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+.profile-linkedin-icon {
+    display: flex;
+    align-items: center;
+}
+.profile-outlink-arrow {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.executive-profile-card:hover .profile-outlink-arrow {
+    color: #60a5fa;
+    transform: translate(1px, -1px);
+}
+.profile-title {
+    font-size: 0.70rem;
+    font-weight: 500;
+    color: #94a3b8;
+    line-height: 1.2;
+}
+.profile-availability-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.67rem;
+    font-weight: 600;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.10);
+    border: 1px solid rgba(16, 185, 129, 0.24);
+    border-radius: 5px;
+    padding: 1px 6px;
+    margin-top: 2px;
+    width: fit-content;
+    white-space: nowrap;
+}
+.profile-beacon {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: profile-beacon-pulse 2s infinite;
+}
+@keyframes profile-beacon-pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 /* ── KPI Cards ────────────────────────────────────────────────────────── */
@@ -407,8 +538,9 @@ def render() -> None:
         st.stop()
 
     # ── Top navigation bar ───────────────────────────────────────────────
+    profile_badge_html = get_profile_badge_html()
     st.markdown(f"""
-        <div class="top-nav" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:18px; margin-bottom:24px;">
+        <div class="top-nav" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:18px; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
             <div class="nav-logo" style="display:flex; align-items:center; gap:12px;">
                 <div class="nav-logo-mark">{ico("lightning","#FFFFFF")}</div>
                 <div>
@@ -416,10 +548,11 @@ def render() -> None:
                     <div class="nav-sub" style="font-size:0.75rem; color:#64748B; margin-top:2px;">Zendesk Tickets → DuckDB In-Memory OLAP → P&amp;L Вплив</div>
                 </div>
             </div>
-            <div class="nav-right" style="display:flex; align-items:center; gap:10px;">
+            <div class="nav-right" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                 <div class="pill"><div class="pulse"></div> LIVE OLAP</div>
                 <div class="pill-neutral">300+ FTE</div>
                 <div class="pill-neutral">C-Level Audit</div>
+                {profile_badge_html}
             </div>
         </div>
     """, unsafe_allow_html=True)

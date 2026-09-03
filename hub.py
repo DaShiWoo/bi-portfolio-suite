@@ -10,7 +10,7 @@ Showcases 6 complete production-grade BI dashboards (30 total analytics views):
 - 🎧 Support Ops P&L — Zendesk Benchmark Case (37k+ In-Memory Records)
 """
 import streamlit as st
-from core.theme import apply_theme
+from core.theme import apply_theme, render_page_header
 
 # Global Page Config
 st.set_page_config(
@@ -49,9 +49,9 @@ with st.sidebar:
 
     
     st.markdown("""
-    <div style="margin-top: 25px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
-        <div style="font-size: 0.72rem; font-weight: 700; color: #a1a1aa; text-transform: uppercase;">Architecture & Stack</div>
-        <div style="font-size: 0.76rem; color: #e4e4e7; margin-top: 6px; line-height: 1.5;">
+    <div style="margin-top: 24px; margin-bottom: 22px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em;">Architecture & Stack</div>
+        <div style="font-size: 0.76rem; color: #e4e4e7; margin-top: 6px; line-height: 1.55;">
             • <b>Total Pages:</b> 25 Full BI Views<br/>
             • <b>Engine:</b> DuckDB In-Memory OLAP<br/>
             • <b>Storage:</b> Apache Parquet (< 3MB)<br/>
@@ -64,56 +64,51 @@ with st.sidebar:
 # Route project and apply respective design language
 if "Marketplace" in selected_project:
     apply_theme("marketplace")
-    st.markdown("""
-    <div style="margin-bottom: 14px;">
-        <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 2px;">Marketplace & E-Commerce Intelligence</h1>
-        <p style="color: #a1a1aa; font-size: 0.9rem; margin-top: 0;">GMV trajectory, take rate economics, order fulfillment funnels, inventory ABC/XYZ, and fee simulations</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_page_header(
+        title="Marketplace & E-Commerce Intelligence",
+        subtitle="GMV trajectory, take rate economics, order fulfillment funnels, inventory ABC/XYZ, and fee simulations",
+        theme_key="marketplace"
+    )
     from projects import marketplace
     marketplace.render()
 
 elif "B2B SaaS" in selected_project:
     apply_theme("saas")
-    st.markdown("""
-    <div style="margin-bottom: 14px;">
-        <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 2px; color: #f8fafc;">B2B SaaS & Subscriptions Intelligence</h1>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 0;">MRR/ARR growth velocity, Net Revenue Retention (NRR) cohorts, logo churn decomposition, CAC payback, and ARR forecast</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_page_header(
+        title="B2B SaaS & Subscriptions Intelligence",
+        subtitle="MRR/ARR growth velocity, Net Revenue Retention (NRR) cohorts, logo churn decomposition, CAC payback, and ARR forecast",
+        theme_key="saas"
+    )
     from projects import saas
     saas.render()
 
 elif "Fintech" in selected_project:
     apply_theme("fintech")
-    st.markdown("""
-    <div style="margin-bottom: 14px;">
-        <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 2px; color: #ecfdf5;">Fintech & Anti-Fraud Telemetry Command</h1>
-        <p style="color: #6ee7b7; font-size: 0.9rem; margin-top: 0;">Real-time transaction stream, multi-vector risk radar, anomaly scatter, payment rails, and rule engine simulator</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_page_header(
+        title="Fintech & Anti-Fraud Telemetry Command",
+        subtitle="Real-time transaction stream, multi-vector risk radar, anomaly scatter, payment rails, and rule engine simulator",
+        theme_key="fintech"
+    )
     from projects import fintech
     fintech.render()
 
 elif "Game" in selected_project:
     apply_theme("gaming")
-    st.markdown("""
-    <div style="margin-bottom: 14px;">
-        <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 2px; color: #f0fdfa;">Game LiveOps & Virtual Economy BI</h1>
-        <p style="color: #a5f3fc; font-size: 0.9rem; margin-top: 0;">Player engagement DAU/MAU, level progression funnels, currency sink vs source, whale monetization, and D1/D7/D30 simulator</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_page_header(
+        title="Game LiveOps & Virtual Economy BI",
+        subtitle="Player engagement DAU/MAU, level progression funnels, currency sink vs source, whale monetization, and D1/D7/D30 simulator",
+        theme_key="gaming"
+    )
     from projects import gaming
     gaming.render()
 
 elif "HealthTech" in selected_project:
     apply_theme("healthtech")
-    st.markdown("""
-    <div style="margin-bottom: 14px;">
-        <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 2px; color: #f0fdf4;">HealthTech & Patient Biometrics Telemetry</h1>
-        <p style="color: #99f6e4; font-size: 0.9rem; margin-top: 0;">Clinical ICU telemetry, ECG cardiovascular vitals density, Kaplan-Meier survival curves, risk stratification, and cohort explorer</p>
-    </div>
-    """, unsafe_allow_html=True)
+    render_page_header(
+        title="HealthTech & Patient Biometrics Telemetry",
+        subtitle="Clinical ICU telemetry, ECG cardiovascular vitals density, Kaplan-Meier survival curves, risk stratification, and cohort explorer",
+        theme_key="healthtech"
+    )
     from projects import healthtech
     healthtech.render()
 
@@ -122,5 +117,6 @@ elif "Support Ops" in selected_project:
     import cases.support_ops_pnl.app as support_ops_module
     importlib.reload(support_ops_module)
     support_ops_module.render()
+
 
 

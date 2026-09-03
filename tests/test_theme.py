@@ -1,4 +1,4 @@
-﻿"""
+"""
 tests/test_theme.py
 Unit tests for core/theme.py: design tokens, WCAG luminance ratios, and HTML component rendering.
 """
@@ -60,3 +60,20 @@ def test_plotly_layout_colorway():
         layout = get_plotly_layout(theme_key)
         assert layout["colorway"] == cfg["chart_palette"]
         assert len(layout["colorway"]) >= 5
+
+
+def test_get_avatar_base64():
+    from core.theme import get_avatar_base64
+    b64 = get_avatar_base64()
+    assert b64.startswith("data:image/")
+    assert len(b64) > 100
+
+
+def test_get_profile_badge_html():
+    from core.theme import get_profile_badge_html
+    html = get_profile_badge_html()
+    assert "https://www.linkedin.com/in/dashiwoo/" in html
+    assert "Danylo (DaShiWoo)" in html
+    assert "Available for Consulting" in html
+    assert "executive-profile-card" in html
+

@@ -5,6 +5,9 @@ Upgraded with animated gradient backgrounds, shimmer KPI cards, glassmorphism
 tabs, sidebar navigation pills, accent scrollbar, filter banners, and metric
 delta helpers.
 """
+import base64
+import functools
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -377,7 +380,12 @@ def apply_theme(theme_key: str):
         border: 1px solid {cfg['border']} !important;
         border-radius: 12px !important;
         backdrop-filter: blur(12px) !important;
-        margin-bottom: 10px !important;
+        margin-top: 14px !important;
+        margin-bottom: 14px !important;
+    }}
+    [data-testid="stSidebar"] [data-testid="stExpander"] {{
+        margin-top: 16px !important;
+        margin-bottom: 12px !important;
     }}
     [data-testid="stExpander"] summary {{
         font-size: 0.85rem !important;
@@ -393,6 +401,136 @@ def apply_theme(theme_key: str):
     [data-testid="stExpander"][open] summary {{
         border-bottom: 1px solid {cfg['border']};
         color: {cfg['accent']} !important;
+    }}
+
+    /* Executive Profile Badge Styles */
+    .executive-profile-link {{
+        text-decoration: none !important;
+        color: inherit !important;
+        display: inline-block;
+        flex-shrink: 0;
+    }}
+    .executive-profile-card {{
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(18, 24, 38, 0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 12px;
+        padding: 8px 14px 8px 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        user-select: none;
+    }}
+    .executive-profile-card:hover {{
+        border-color: rgba(99, 102, 241, 0.5) !important;
+        background: rgba(24, 32, 54, 0.88) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(37, 99, 235, 0.28) !important;
+    }}
+    .profile-avatar-container {{
+        position: relative;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }}
+    .profile-avatar-img {{
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1.5px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        display: block;
+    }}
+    .profile-avatar-fallback {{
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }}
+    .profile-status-dot {{
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        width: 11px;
+        height: 11px;
+        background: #10b981;
+        border: 2px solid #0b0e17;
+        border-radius: 50%;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+    }}
+    .profile-text-col {{
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }}
+    .profile-name-row {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }}
+    .profile-name {{
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #f8fafc;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+    }}
+    .profile-linkedin-icon {{
+        display: flex;
+        align-items: center;
+    }}
+    .profile-outlink-arrow {{
+        font-size: 0.75rem;
+        color: #94a3b8;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }}
+    .executive-profile-card:hover .profile-outlink-arrow {{
+        color: #60a5fa;
+        transform: translate(1px, -1px);
+    }}
+    .profile-title {{
+        font-size: 0.70rem;
+        font-weight: 500;
+        color: #94a3b8;
+        line-height: 1.2;
+    }}
+    .profile-availability-pill {{
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.67rem;
+        font-weight: 600;
+        color: #34d399;
+        background: rgba(16, 185, 129, 0.10);
+        border: 1px solid rgba(16, 185, 129, 0.24);
+        border-radius: 5px;
+        padding: 1px 6px;
+        margin-top: 2px;
+        width: fit-content;
+        white-space: nowrap;
+    }}
+    .profile-beacon {{
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: profile-beacon-pulse 2s infinite;
+    }}
+    @keyframes profile-beacon-pulse {{
+        0% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }}
+        70% {{ transform: scale(1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }}
+        100% {{ transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }}
     }}
 
     /* Custom accent scrollbar */
@@ -667,3 +805,100 @@ def get_plotly_layout(theme_key: str, height: int = 350) -> dict:
             font=dict(size=10, color=cfg["text_primary"]),
         ),
     )
+
+
+# ---------------------------------------------------------------------------
+# Executive Profile Badge & Header Component
+# ---------------------------------------------------------------------------
+
+@functools.lru_cache(maxsize=1)
+def get_avatar_base64() -> str:
+    """Return base64 data URI of user avatar, prioritizing optimized assets."""
+    candidates = [
+        Path("assets/profile_avatar_opt.png"),
+        Path("assets/profile_avatar.png"),
+        Path("docs/linkedin_avatar_pro.jpg"),
+        Path("docs/linkedin_avatar_exact.jpg"),
+    ]
+    for p in candidates:
+        if p.exists():
+            mime = "image/png" if p.suffix.lower() == ".png" else "image/jpeg"
+            with open(p, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+            return f"data:{mime};base64,{b64}"
+    return ""
+
+
+def get_profile_badge_html() -> str:
+    """
+    Generate the Executive Profile Badge HTML with avatar, online status beacon,
+    C-Level positioning, and direct LinkedIn clickable link.
+    """
+    avatar_uri = get_avatar_base64()
+    if avatar_uri:
+        avatar_markup = f'<img src="{avatar_uri}" alt="Danylo" class="profile-avatar-img" />'
+    else:
+        avatar_markup = '<div class="profile-avatar-fallback">DW</div>'
+
+    return f"""<a href="https://www.linkedin.com/in/dashiwoo/" target="_blank" rel="noopener noreferrer" class="executive-profile-link" title="Open Danylo's LinkedIn Profile (in/dashiwoo)">
+        <div class="executive-profile-card">
+            <div class="profile-avatar-container">
+                {avatar_markup}
+                <span class="profile-status-dot" title="Available for projects"></span>
+            </div>
+            <div class="profile-text-col">
+                <div class="profile-name-row">
+                    <span class="profile-name">Danylo (DaShiWoo)</span>
+                    <span class="profile-linkedin-icon" title="Verified LinkedIn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#0A66C2">
+                            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.2a1.66 1.66 0 0 0-1.67 1.67c0 .92.75 1.67 1.67 1.67a1.67 1.67 0 0 0 1.67-1.67c0-.92-.75-1.67-1.67-1.67Z"/>
+                        </svg>
+                    </span>
+                    <span class="profile-outlink-arrow">&#8599;</span>
+                </div>
+                <div class="profile-title">Principal BI &amp; Data Architect</div>
+                <div class="profile-availability-pill">
+                    <span class="profile-beacon"></span>
+                    <span>Available for Consulting / Q3-Q4 Contracts</span>
+                </div>
+            </div>
+        </div>
+    </a>"""
+
+
+def render_page_header(title: str, subtitle: str, theme_key: str = "marketplace") -> None:
+    """
+    Render a responsive top-level dashboard header banner with the Executive Profile
+    Badge positioned in the top-right corner opposite the H1 title.
+    """
+    cfg = THEMES.get(theme_key, THEMES["marketplace"])
+    title_color = cfg.get("text_primary", "#ffffff")
+    sub_color = cfg.get("text_muted", "#94a3b8")
+    badge_html = get_profile_badge_html()
+
+    header_html = f"""
+    <div class="hub-header-wrap" style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        flex-wrap: wrap;
+    ">
+        <div style="flex: 1 1 460px; min-width: 280px;">
+            <h1 style="font-size: 1.95rem; font-weight: 800; margin-bottom: 4px; color: {title_color}; letter-spacing: -0.02em;">
+                {title}
+            </h1>
+            <p style="color: {sub_color}; font-size: 0.88rem; margin-top: 0; margin-bottom: 0; line-height: 1.45;">
+                {subtitle}
+            </p>
+        </div>
+        <div style="flex-shrink: 0;">
+            {badge_html}
+        </div>
+    </div>
+    """
+    st.markdown(header_html, unsafe_allow_html=True)
+
