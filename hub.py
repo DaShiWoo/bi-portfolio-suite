@@ -8,8 +8,11 @@ Showcases 6 complete production-grade BI dashboards (30 total analytics views):
 - 🎮 Game LiveOps & Economy (Cyber Neon Arcade)
 - 🩺 HealthTech & Patient Biometrics (ICU, Kaplan-Meier, Risk Scoring)
 - 🎧 Support Ops P&L — Zendesk Benchmark Case (37k+ In-Memory Records)
-"""
+# Build v1.2.2: Danyil (DaShiWoo) Profile Badge update
+import importlib
 import streamlit as st
+import core.theme
+importlib.reload(core.theme)
 from core.theme import apply_theme, render_page_header
 
 # Global Page Config

@@ -4,5 +4,5 @@ pandas>=2.0.0
 numpy>=1.24.0
 pyarrow>=14.0.0
 duckdb>=0.9.0
-# Container rebuild: 2026-09-02 flush sys.modules cache
+# Container rebuild: 2026-09-03 flush sys.modules cache for Danyil update
 
