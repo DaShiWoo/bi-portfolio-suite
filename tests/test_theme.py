@@ -73,7 +73,7 @@ def test_get_profile_badge_html():
     from core.theme import get_profile_badge_html
     html = get_profile_badge_html()
     assert "https://www.linkedin.com/in/dashiwoo/" in html
-    assert "Danylo (DaShiWoo)" in html
+    assert "Danyil (DaShiWoo)" in html
     assert "Available for Consulting" in html
     assert "executive-profile-card" in html
 

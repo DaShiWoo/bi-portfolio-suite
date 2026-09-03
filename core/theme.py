@@ -836,11 +836,11 @@ def get_profile_badge_html() -> str:
     """
     avatar_uri = get_avatar_base64()
     if avatar_uri:
-        avatar_markup = f'<img src="{avatar_uri}" alt="Danylo" class="profile-avatar-img" />'
+        avatar_markup = f'<img src="{avatar_uri}" alt="Danyil" class="profile-avatar-img" />'
     else:
         avatar_markup = '<div class="profile-avatar-fallback">DW</div>'
 
-    return f"""<a href="https://www.linkedin.com/in/dashiwoo/" target="_blank" rel="noopener noreferrer" class="executive-profile-link" title="Open Danylo's LinkedIn Profile (in/dashiwoo)">
+    return f"""<a href="https://www.linkedin.com/in/dashiwoo/" target="_blank" rel="noopener noreferrer" class="executive-profile-link" title="Open Danyil's LinkedIn Profile (in/dashiwoo)">
         <div class="executive-profile-card">
             <div class="profile-avatar-container">
                 {avatar_markup}
@@ -848,7 +848,7 @@ def get_profile_badge_html() -> str:
             </div>
             <div class="profile-text-col">
                 <div class="profile-name-row">
-                    <span class="profile-name">Danylo (DaShiWoo)</span>
+                    <span class="profile-name">Danyil (DaShiWoo)</span>
                     <span class="profile-linkedin-icon" title="Verified LinkedIn">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="#0A66C2">
                             <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.2a1.66 1.66 0 0 0-1.67 1.67c0 .92.75 1.67 1.67 1.67a1.67 1.67 0 0 0 1.67-1.67c0-.92-.75-1.67-1.67-1.67Z"/>
